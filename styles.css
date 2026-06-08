@@ -165,6 +165,12 @@ h1 {
   line-height: 1.25;
 }
 
+.stats-panel article small {
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.25;
+}
+
 .control-bar {
   display: flex;
   justify-content: space-between;

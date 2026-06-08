@@ -491,6 +491,7 @@ const overallPercent = document.getElementById("overallPercent");
 const closedCount = document.getElementById("closedCount");
 const lastUpdated = document.getElementById("lastUpdated");
 const riskCount = document.getElementById("riskCount");
+const riskOwner = document.getElementById("riskOwner");
 const currentDate = document.getElementById("currentDate");
 const projectDayCount = document.getElementById("projectDayCount");
 const activeCount = document.getElementById("activeCount");
@@ -738,7 +739,7 @@ function scopeClass(scope) {
   const normalized = (scope || "").toLowerCase();
   if (normalized.includes("entel")) return "scope-entel";
   if (normalized.includes("intellicore")) return "scope-intellicore";
-  if (normalized.includes("splunk")) return "scope-splunk";
+  if (normalized.includes("splunk") || normalized.includes("dplink")) return "scope-splunk";
   if (normalized.includes("conjunta") || normalized.includes("conjunto")) return "scope-conjunta";
   return "scope-entel";
 }
@@ -988,13 +989,42 @@ function updateStats() {
   const active = visible.filter((task) => !task.completed && task.deposit !== "Cierre").length;
   const inProgress = visible.filter((task) => task.status === "En curso").length;
   const closing = visible.filter((task) => task.deposit === "Cierre" || task.completed).length;
-  const overdue = visible.filter((task) => taskDelayInfo(task).state === "overdue" && !task.completed).length;
+  const overdueTasks = visible.filter((task) => taskDelayInfo(task).state === "overdue" && !task.completed);
+  const overdue = overdueTasks.length;
 
   activeCount.textContent = String(active);
   inProgressCount.textContent = String(inProgress);
   closingCount.textContent = String(closing);
   if (riskCount) {
     riskCount.textContent = String(overdue);
+  }
+
+  if (riskOwner) {
+    if (!overdueTasks.length) {
+      riskOwner.textContent = "Sin atrasos";
+    } else {
+      const scopeMap = overdueTasks.reduce((acc, task) => {
+        const scopeKey = scopeClass(task.scope);
+        const label =
+          scopeKey === "scope-entel"
+            ? "Entel"
+            : scopeKey === "scope-intellicore"
+              ? "Intellicore"
+              : scopeKey === "scope-splunk"
+                ? "Splunk"
+                : "Conjunta";
+        acc[label] = (acc[label] || 0) + 1;
+        return acc;
+      }, {});
+
+      const ranking = Object.entries(scopeMap).sort((a, b) => b[1] - a[1]);
+      const [topScope, count] = ranking[0];
+      if (ranking.length === 1) {
+        riskOwner.textContent = `Frente: ${topScope} (${count})`;
+      } else {
+        riskOwner.textContent = `Principal: ${topScope} (${count}) +${ranking.length - 1}`;
+      }
+    }
   }
 
   updateDateAndCounter();
