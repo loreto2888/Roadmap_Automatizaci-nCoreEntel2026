@@ -80,6 +80,24 @@ function formatDate(date) {
   return date.toLocaleDateString("es-CL");
 }
 
+function updateCurrentDateAndCounter(payload) {
+  const currentDate = document.getElementById("ganttCurrentDate");
+  const dayCounter = document.getElementById("ganttDayCounter");
+  if (!currentDate || !dayCounter) return;
+
+  const now = new Date();
+  currentDate.textContent = now.toLocaleDateString("es-CL", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+
+  const totalDays = Math.max(1, payload.spanDays);
+  const elapsed = Math.floor((now.getTime() - payload.minDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+  const day = Math.max(1, Math.min(totalDays, elapsed));
+  dayCounter.textContent = `D${day}/${totalDays}`;
+}
+
 function renderRows(payload) {
   const rows = document.getElementById("ganttRows");
   if (!rows) return;
@@ -101,6 +119,9 @@ function renderRows(payload) {
     const start = document.createElement("span");
     start.textContent = formatDate(task.startDate);
 
+    const end = document.createElement("span");
+    end.textContent = formatDate(task.endDate);
+
     const duration = document.createElement("span");
     duration.textContent = `${task.duration} d`;
 
@@ -117,7 +138,7 @@ function renderRows(payload) {
     bar.style.width = `${Math.min(100 - left, width)}%`;
 
     timeline.appendChild(bar);
-    row.append(title, start, duration, status, timeline);
+    row.append(title, start, end, duration, status, timeline);
     rows.appendChild(row);
   });
 }
@@ -174,3 +195,5 @@ const payload = withSchedule(tasks);
 renderRows(payload);
 hookDownload(payload);
 setUpdatedDate();
+updateCurrentDateAndCounter(payload);
+window.setInterval(() => updateCurrentDateAndCounter(payload), 1000);

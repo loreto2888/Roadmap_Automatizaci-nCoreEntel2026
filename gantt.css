@@ -59,6 +59,20 @@ h1 {
   margin: 8px 0 0;
 }
 
+.meta-strip {
+  margin-top: 8px;
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.meta-strip strong {
+  color: var(--text);
+  font-family: "Space Grotesk", sans-serif;
+}
+
 .actions {
   display: flex;
   gap: 10px;
@@ -129,7 +143,7 @@ h1 {
 .gantt-head,
 .gantt-row {
   display: grid;
-  grid-template-columns: minmax(240px, 1.2fr) 140px 100px 100px minmax(340px, 2fr);
+  grid-template-columns: minmax(240px, 1.2fr) 120px 120px 90px 90px minmax(320px, 2fr);
   gap: 12px;
   align-items: center;
   padding: 12px 14px;

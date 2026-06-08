@@ -44,6 +44,18 @@
             <span>Última actualización</span>
             <strong id="lastUpdated">--:--:--</strong>
           </article>
+          <article>
+            <span>Riesgo (atrasadas)</span>
+            <strong id="riskCount">0</strong>
+          </article>
+          <article>
+            <span>Fecha actual</span>
+            <strong id="currentDate">--/--/----</strong>
+          </article>
+          <article>
+            <span>Contador de días</span>
+            <strong id="projectDayCount">D0/0</strong>
+          </article>
         </section>
       </header>
 
@@ -54,6 +66,7 @@
           <button class="chip" data-filter="intellicore" type="button">INTELLICORE</button>
           <button class="chip" data-filter="splunk" type="button">SPLUNK</button>
           <button class="chip" data-filter="conjunta" type="button">CONJUNTA</button>
+          <button class="chip" data-filter="overdue" type="button">ATRASADAS</button>
         </div>
 
         <label class="toggle-live">
@@ -62,6 +75,35 @@
         </label>
 
         <a class="gantt-link" href="gantt.html">Ir a Carta Gantt</a>
+      </section>
+
+      <section class="planning-panel" aria-label="Panel de calendario y alertas">
+        <div class="planning-head">
+          <div>
+            <p class="planning-kicker">Calendario operativo</p>
+            <h2>Vista de tareas con línea de hoy</h2>
+          </div>
+          <strong id="planningRange">Rango: --</strong>
+        </div>
+
+        <div class="planning-calendar" id="planningCalendar">
+          <div class="planning-axis" id="planningAxis"></div>
+          <div class="planning-now-line" id="planningNowLine"></div>
+          <span class="planning-now-label" id="planningNowLabel">Hoy</span>
+        </div>
+
+        <div class="planning-body">
+          <div class="planning-rows" id="planningRows"></div>
+          <aside class="planning-alerts">
+            <h3>Notificaciones</h3>
+            <p>Tareas urgentes e importantes abiertas</p>
+            <div class="planning-alert-toolbar">
+              <button id="configureWebhook" type="button">Configurar webhook</button>
+              <button id="sendWebhook" type="button">Enviar alertas a Teams</button>
+            </div>
+            <ul id="urgentList"></ul>
+          </aside>
+        </div>
       </section>
 
       <section class="roadmap-grid">
@@ -114,6 +156,8 @@
         <section class="board" id="board" aria-label="Tareas del roadmap"></section>
       </section>
     </main>
+
+    <div class="toast-stack" id="toastStack" aria-live="polite" aria-atomic="false"></div>
 
     <template id="laneTemplate">
       <section class="lane">
