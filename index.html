@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Roadmap Automatización Core</title>
+    <meta
+      name="description"
+      content="Roadmap interactivo con progreso en tiempo real para tareas de ENTEL, INTELLICORE y CONJUNTA."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="background-orb orb-one"></div>
+    <div class="background-orb orb-two"></div>
+
+    <main class="app-shell">
+      <header class="hero">
+        <div>
+          <p class="eyebrow">Roadmap en tiempo real</p>
+          <h1>Automatización Core Entel 2026</h1>
+          <p class="hero-copy">
+            Visualiza el avance por frentes, marca cierres al instante y observa cómo la línea de progreso se mueve
+            automáticamente.
+          </p>
+        </div>
+
+        <section class="stats-panel" aria-label="Resumen del roadmap">
+          <article>
+            <span>Avance global</span>
+            <strong id="overallPercent">0%</strong>
+          </article>
+          <article>
+            <span>Tareas cerradas</span>
+            <strong id="closedCount">0/0</strong>
+          </article>
+          <article>
+            <span>Última actualización</span>
+            <strong id="lastUpdated">--:--:--</strong>
+          </article>
+        </section>
+      </header>
+
+      <section class="control-bar">
+        <div class="chip-group" role="tablist" aria-label="Filtrar roadmap">
+          <button class="chip active" data-filter="all" type="button">Todo</button>
+          <button class="chip" data-filter="entel" type="button">ENTEL</button>
+          <button class="chip" data-filter="intellicore" type="button">INTELLICORE</button>
+          <button class="chip" data-filter="splunk" type="button">SPLUNK</button>
+          <button class="chip" data-filter="conjunta" type="button">CONJUNTA</button>
+        </div>
+
+        <label class="toggle-live">
+          <input id="autoAdvance" type="checkbox" checked />
+          <span>Modo vivo</span>
+        </label>
+
+        <a class="gantt-link" href="gantt.html">Ir a Carta Gantt</a>
+      </section>
+
+      <section class="roadmap-grid">
+        <aside class="timeline-card">
+          <div class="timeline-header">
+            <p>Línea de avance</p>
+            <span id="timelineLabel">0% completado</span>
+          </div>
+
+          <div class="timeline-track" aria-hidden="true">
+            <div class="timeline-track-base"></div>
+            <div class="timeline-track-fill" id="timelineFill"></div>
+            <div class="timeline-node" id="timelineNode"></div>
+          </div>
+
+          <div class="timeline-summary">
+            <div>
+              <span>Activas</span>
+              <strong id="activeCount">0</strong>
+            </div>
+            <div>
+              <span>En curso</span>
+              <strong id="inProgressCount">0</strong>
+            </div>
+            <div>
+              <span>Cierre</span>
+              <strong id="closingCount">0</strong>
+            </div>
+          </div>
+
+          <div class="chart-stack" aria-label="Graficas en tiempo real">
+            <section class="chart-card">
+              <div class="chart-head">
+                <p>Estado actual</p>
+                <strong id="statusChartLabel">0% cierre</strong>
+              </div>
+              <div class="donut" id="statusDonut" role="img" aria-label="Porcentaje de tareas cerradas"></div>
+            </section>
+
+            <section class="chart-card">
+              <div class="chart-head">
+                <p>Por etiqueta</p>
+                <strong id="scopeChartLabel">0 tareas</strong>
+              </div>
+              <div class="scope-bars" id="scopeBars"></div>
+            </section>
+          </div>
+        </aside>
+
+        <section class="board" id="board" aria-label="Tareas del roadmap"></section>
+      </section>
+    </main>
+
+    <template id="laneTemplate">
+      <section class="lane">
+        <div class="lane-header">
+          <div>
+            <p class="lane-kicker"></p>
+            <h2></h2>
+          </div>
+          <div class="lane-meta">
+            <span class="lane-progress"></span>
+            <span class="lane-total"></span>
+          </div>
+        </div>
+        <div class="lane-track"></div>
+      </section>
+    </template>
+
+    <template id="taskTemplate">
+      <article class="task-card">
+        <button class="task-check" type="button" aria-label="Cambiar estado de la tarea"></button>
+        <div class="task-body">
+          <div class="task-topline">
+            <div class="task-id"></div>
+            <div class="task-status"></div>
+          </div>
+          <h3 class="task-title"></h3>
+          <p class="task-meta"></p>
+          <div class="task-tags">
+            <span class="badge badge-owner"></span>
+            <span class="badge badge-priority"></span>
+            <span class="badge badge-scope"></span>
+          </div>
+        </div>
+      </article>
+    </template>
+
+    <script src="script.js"></script>
+  </body>
+</html>

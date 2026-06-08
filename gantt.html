@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Carta Gantt - Automatizacion Core</title>
+    <meta name="description" content="Carta Gantt descargable del roadmap de Automatizacion Core." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="gantt.css" />
+  </head>
+  <body>
+    <main class="gantt-shell">
+      <header class="gantt-header">
+        <div>
+          <p class="eyebrow">Planificacion visual</p>
+          <h1>Carta Gantt del Roadmap</h1>
+          <p id="updatedAt" class="meta">Actualizado: --</p>
+        </div>
+        <div class="actions">
+          <a class="btn ghost" href="index.html">Volver al Roadmap</a>
+          <button id="downloadCsv" class="btn" type="button">Descargar Gantt CSV</button>
+        </div>
+      </header>
+
+      <section class="legend" aria-label="Leyenda por etiqueta">
+        <span class="legend-item entel">Entel</span>
+        <span class="legend-item intellicore">Intellicore</span>
+        <span class="legend-item splunk">Splunk</span>
+        <span class="legend-item conjunta">Conjunta</span>
+      </section>
+
+      <section class="gantt-table" aria-label="Tabla Gantt">
+        <div class="gantt-head">
+          <span>Tarea</span>
+          <span>Fecha inicio</span>
+          <span>Duracion</span>
+          <span>Estado</span>
+          <span>Linea de tiempo</span>
+        </div>
+        <div id="ganttRows" class="gantt-rows"></div>
+      </section>
+    </main>
+
+    <script src="gantt.js"></script>
+  </body>
+</html>
