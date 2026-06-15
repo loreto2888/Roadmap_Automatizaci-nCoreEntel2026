@@ -17,7 +17,7 @@ jobs:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
         run: |
           if [ -z "$DISCORD_WEBHOOK" ]; then
-            echo "ERROR: Missing DISCORD_WEBHOOK_URL secret"
+            echo "::error::Missing DISCORD_WEBHOOK_URL secret"
             exit 1
           fi
 
@@ -71,7 +71,7 @@ jobs:
           EOF
           )
 
-          curl -X POST "$DISCORD_WEBHOOK" \
+          curl -f -X POST "$DISCORD_WEBHOOK" \
             -H "Content-Type: application/json" \
             -d "$payload" \
             -w "\nHTTP Status: %{http_code}\n"
