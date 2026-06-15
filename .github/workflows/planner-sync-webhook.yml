@@ -1,0 +1,42 @@
+name: Sync Push To Planner (Webhook)
+
+on:
+  push:
+    branches:
+      - "**"
+
+permissions:
+  contents: read
+
+jobs:
+  sync-planner:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Call Power Automate Webhook
+        env:
+          WEBHOOK_URL: ${{ secrets.POWER_AUTOMATE_WEBHOOK_URL }}
+        run: |
+          if [ -z "$WEBHOOK_URL" ]; then
+            echo "ERROR: Missing POWER_AUTOMATE_WEBHOOK_URL secret"
+            exit 1
+          fi
+
+          repo="${GITHUB_REPOSITORY}"
+          branch="${GITHUB_REF#refs/heads/}"
+          sha="${GITHUB_SHA:0:8}"
+          actor="${GITHUB_ACTOR}"
+          commit_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/commit/${GITHUB_SHA}"
+
+          curl -X POST "$WEBHOOK_URL" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "repository": "'"$repo"'",
+              "branch": "'"$branch"'",
+              "sha": "'"$sha"'",
+              "actor": "'"$actor"'",
+              "commit_url": "'"$commit_url"'"
+            }' \
+            -w "\nHTTP Status: %{http_code}\n"
