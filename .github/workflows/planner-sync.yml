@@ -1,0 +1,31 @@
+name: Sync Push To Planner
+
+on:
+  push:
+    branches:
+      - "**"
+
+permissions:
+  contents: read
+
+jobs:
+  sync-planner:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Create or update Planner task
+        env:
+          MS_TENANT_ID: ${{ secrets.MS_TENANT_ID }}
+          MS_CLIENT_ID: ${{ secrets.MS_CLIENT_ID }}
+          MS_CLIENT_SECRET: ${{ secrets.MS_CLIENT_SECRET }}
+          PLANNER_PLAN_ID: ${{ secrets.PLANNER_PLAN_ID }}
+          PLANNER_BUCKET_ID: ${{ secrets.PLANNER_BUCKET_ID }}
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: node .github/scripts/planner-sync.js
