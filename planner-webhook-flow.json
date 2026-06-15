@@ -1,0 +1,132 @@
+{
+  "properties": {
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "actions": {
+        "Condition": {
+          "type": "If",
+          "expression": {
+            "and": [
+              {
+                "greater": [
+                  {
+                    "length": "@body('Filter_array')"
+                  },
+                  0
+                ]
+              }
+            ]
+          },
+          "actions": {
+            "Update_a_task": {
+              "type": "OpenApiConnection",
+              "inputs": {
+                "host": {
+                  "connectionName": "shared_planner",
+                  "operationId": "PatchTask",
+                  "apiId": "/providers/Microsoft.PowerApps/apis/shared_planner"
+                },
+                "parameters": {
+                  "planId": "[PLANNER_PLAN_ID_HERE]",
+                  "taskId": "@first(body('Filter_array')).id",
+                  "body/title": "@concat('[Auto]', triggerBody()?['repository'], '[', triggerBody()?['branch'], '] ultimo push ', substring(triggerBody()?['sha'], 0, 8))",
+                  "body/description": "@concat('Repositorio: ', triggerBody()?['repository'], '\nBranch: ', triggerBody()?['branch'], '\nCommit: ', triggerBody()?['sha'], '\nActor: ', triggerBody()?['actor'], '\nURL: ', triggerBody()?['commit_url'], '\nActualizado: ', utcNow())"
+                }
+              },
+              "runAfter": {}
+            }
+          },
+          "else": {
+            "actions": {
+              "Create_a_task": {
+                "type": "OpenApiConnection",
+                "inputs": {
+                  "host": {
+                    "connectionName": "shared_planner",
+                    "operationId": "PostTask",
+                    "apiId": "/providers/Microsoft.PowerApps/apis/shared_planner"
+                  },
+                  "parameters": {
+                    "planId": "[PLANNER_PLAN_ID_HERE]",
+                    "body/bucketId": "[PLANNER_BUCKET_ID_HERE]",
+                    "body/title": "@concat('[Auto]', triggerBody()?['repository'], '[', triggerBody()?['branch'], '] ultimo push ', substring(triggerBody()?['sha'], 0, 8))",
+                    "body/description": "@concat('Repositorio: ', triggerBody()?['repository'], '\nBranch: ', triggerBody()?['branch'], '\nCommit: ', triggerBody()?['sha'], '\nActor: ', triggerBody()?['actor'], '\nURL: ', triggerBody()?['commit_url'], '\nActualizado: ', utcNow())"
+                  }
+                },
+                "runAfter": {}
+              }
+            }
+          },
+          "runAfter": {
+            "Filter_array": [
+              "Succeeded"
+            ]
+          }
+        },
+        "Filter_array": {
+          "type": "Query",
+          "inputs": {
+            "from": "@body('List_tasks_in_a_bucket')?['value']",
+            "where": "@contains(item()?['title'], triggerBody()?['repository'])"
+          },
+          "runAfter": {
+            "List_tasks_in_a_bucket": [
+              "Succeeded"
+            ]
+          }
+        },
+        "List_tasks_in_a_bucket": {
+          "type": "OpenApiConnection",
+          "inputs": {
+            "host": {
+              "connectionName": "shared_planner",
+              "operationId": "GetTasksInBucket",
+              "apiId": "/providers/Microsoft.PowerApps/apis/shared_planner"
+            },
+            "parameters": {
+              "planId": "[PLANNER_PLAN_ID_HERE]",
+              "bucketId": "[PLANNER_BUCKET_ID_HERE]"
+            }
+          },
+          "runAfter": {}
+        }
+      },
+      "contentVersion": "1.0.0.0",
+      "outputs": {},
+      "parameters": {},
+      "triggers": {
+        "When_a_HTTP_request_is_received": {
+          "type": "Request",
+          "kind": "Http",
+          "inputs": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "repository": {
+                  "type": "string"
+                },
+                "branch": {
+                  "type": "string"
+                },
+                "sha": {
+                  "type": "string"
+                },
+                "actor": {
+                  "type": "string"
+                },
+                "commit_url": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "name": "GitHub_Planner_Sync_Webhook",
+    "tags": {
+      "hidden-aad-app-id": "",
+      "connector": "shared_planner"
+    }
+  }
+}
