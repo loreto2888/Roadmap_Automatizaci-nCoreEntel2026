@@ -1,0 +1,77 @@
+name: Notify Discord on Push
+
+on:
+  push:
+    branches:
+      - "**"
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Send Discord Notification
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          if [ -z "$DISCORD_WEBHOOK" ]; then
+            echo "ERROR: Missing DISCORD_WEBHOOK_URL secret"
+            exit 1
+          fi
+
+          repo="${GITHUB_REPOSITORY}"
+          branch="${GITHUB_REF#refs/heads/}"
+          sha="${GITHUB_SHA:0:8}"
+          actor="${GITHUB_ACTOR}"
+          commit_url="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/commit/${GITHUB_SHA}"
+          
+          # Construir embed de Discord
+          payload=$(cat <<EOF
+          {
+            "username": "GitHub Bot",
+            "avatar_url": "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png",
+            "embeds": [
+              {
+                "title": "🚀 Nuevo Push",
+                "url": "$commit_url",
+                "description": "Cambios aplicados en el repositorio",
+                "color": 3447003,
+                "fields": [
+                  {
+                    "name": "📦 Repositorio",
+                    "value": "$repo",
+                    "inline": true
+                  },
+                  {
+                    "name": "🌿 Branch",
+                    "value": "$branch",
+                    "inline": true
+                  },
+                  {
+                    "name": "🔗 Commit",
+                    "value": "[\`$sha\`]($commit_url)",
+                    "inline": true
+                  },
+                  {
+                    "name": "👤 Author",
+                    "value": "$actor",
+                    "inline": true
+                  },
+                  {
+                    "name": "🕐 Timestamp",
+                    "value": "$(date -u +'%Y-%m-%d %H:%M:%S UTC')",
+                    "inline": false
+                  }
+                ]
+              }
+            ]
+          }
+          EOF
+          )
+
+          curl -X POST "$DISCORD_WEBHOOK" \
+            -H "Content-Type: application/json" \
+            -d "$payload" \
+            -w "\nHTTP Status: %{http_code}\n"
