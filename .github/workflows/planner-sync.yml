@@ -20,6 +20,26 @@ jobs:
         with:
           node-version: "20"
 
+      - name: Validate required secrets
+        env:
+          MS_TENANT_ID: ${{ secrets.MS_TENANT_ID }}
+          MS_CLIENT_ID: ${{ secrets.MS_CLIENT_ID }}
+          MS_CLIENT_SECRET: ${{ secrets.MS_CLIENT_SECRET }}
+          PLANNER_PLAN_ID: ${{ secrets.PLANNER_PLAN_ID }}
+          PLANNER_BUCKET_ID: ${{ secrets.PLANNER_BUCKET_ID }}
+        run: |
+          set -e
+          missing=0
+          for var in MS_TENANT_ID MS_CLIENT_ID MS_CLIENT_SECRET PLANNER_PLAN_ID PLANNER_BUCKET_ID; do
+            if [ -z "${!var}" ]; then
+              echo "::error::Missing required GitHub secret: $var"
+              missing=1
+            fi
+          done
+          if [ "$missing" -ne 0 ]; then
+            exit 1
+          fi
+
       - name: Create or update Planner task
         env:
           MS_TENANT_ID: ${{ secrets.MS_TENANT_ID }}
