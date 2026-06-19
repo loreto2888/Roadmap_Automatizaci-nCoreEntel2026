@@ -41,6 +41,10 @@
             <strong id="closedCount">0/0</strong>
           </article>
           <article>
+            <span>Tareas restantes</span>
+            <strong id="remainingCount">0</strong>
+          </article>
+          <article>
             <span>Última actualización</span>
             <strong id="lastUpdated">--:--:--</strong>
           </article>
@@ -59,6 +63,16 @@
           </article>
         </section>
       </header>
+
+      <section class="chart-section" aria-label="Gráfica de progreso">
+        <div class="chart-container">
+          <canvas id="progressChart" width="200" height="200"></canvas>
+          <div class="chart-label">
+            <strong id="chartPercent">0%</strong>
+            <small>completado</small>
+          </div>
+        </div>
+      </section>
 
       <section class="control-bar">
         <div class="chip-group" role="tablist" aria-label="Filtrar roadmap">

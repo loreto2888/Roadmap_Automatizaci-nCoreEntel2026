@@ -489,6 +489,7 @@ const timelineNode = document.getElementById("timelineNode");
 const timelineLabel = document.getElementById("timelineLabel");
 const overallPercent = document.getElementById("overallPercent");
 const closedCount = document.getElementById("closedCount");
+const remainingCount = document.getElementById("remainingCount");
 const lastUpdated = document.getElementById("lastUpdated");
 const riskCount = document.getElementById("riskCount");
 const riskOwner = document.getElementById("riskOwner");
@@ -497,6 +498,8 @@ const projectDayCount = document.getElementById("projectDayCount");
 const activeCount = document.getElementById("activeCount");
 const inProgressCount = document.getElementById("inProgressCount");
 const closingCount = document.getElementById("closingCount");
+const progressChart = document.getElementById("progressChart");
+const chartPercent = document.getElementById("chartPercent");
 const chips = Array.from(document.querySelectorAll(".chip"));
 const autoAdvance = document.getElementById("autoAdvance");
 const statusDonut = document.getElementById("statusDonut");
@@ -983,12 +986,15 @@ function planningKey(visible) {
 
 function updateStats() {
   const visible = getVisibleTasks();
+  const allTasks = getAllTasks();
   const closed = visible.filter((task) => task.completed).length;
   const total = visible.length || 1;
   const percent = Math.round((closed / total) * 100);
+  const globalRemaining = allTasks.filter((task) => !task.completed).length;
 
   overallPercent.textContent = `${percent}%`;
   closedCount.textContent = `${closed}/${visible.length}`;
+  remainingCount.textContent = `${globalRemaining}`;
   timelineLabel.textContent = `${percent}% completado`;
   lastUpdated.textContent = formatClock(new Date());
 
@@ -1038,6 +1044,7 @@ function updateStats() {
   timelineFill.style.height = `${percent}%`;
   timelineNode.style.setProperty("--node-y", `${Math.max(0, Math.min(500, 520 - (percent / 100) * 520))}px`);
   updateCharts(visible, percent);
+  drawProgressChart();
 
   const key = planningKey(visible);
   if (key !== planningSignature) {
@@ -1046,6 +1053,42 @@ function updateStats() {
   } else {
     updateNowMarker();
   }
+}
+
+function drawProgressChart() {
+  if (!progressChart) return;
+  const ctx = progressChart.getContext("2d");
+  const allTasks = getAllTasks();
+  const completed = allTasks.filter((task) => task.completed).length;
+  const total = allTasks.length || 1;
+  const percent = Math.round((completed / total) * 100);
+  
+  if (chartPercent) {
+    chartPercent.textContent = `${percent}%`;
+  }
+
+  const centerX = progressChart.width / 2;
+  const centerY = progressChart.height / 2;
+  const radius = 85;
+  const lineWidth = 18;
+
+  ctx.clearRect(0, 0, progressChart.width, progressChart.height);
+
+  // Fondo del donut (gris oscuro)
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+  ctx.lineWidth = lineWidth;
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
+  ctx.stroke();
+
+  // Progreso completado (verde/cyan)
+  const endAngle = (completed / total) * Math.PI * 2 - Math.PI / 2;
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, radius, -Math.PI / 2, endAngle);
+  ctx.lineWidth = lineWidth;
+  ctx.strokeStyle = "#39d0c2";
+  ctx.lineCap = "round";
+  ctx.stroke();
 }
 
 function renderRoadmap() {

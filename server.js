@@ -140,13 +140,14 @@ async function buildRoadmapFromPlanner() {
   const lanes = [
     { key: "entel", lane: "ENTEL", kicker: "Planner", title: "Roadmap Entel", tasks: [] },
     { key: "intellicore", lane: "INTELLICORE", kicker: "Planner", title: "Roadmap Intellicore", tasks: [] },
+    { key: "splunk", lane: "SPLUNK", kicker: "Planner", title: "Roadmap Splunk", tasks: [] },
     { key: "conjunta", lane: "CONJUNTA", kicker: "Planner", title: "Roadmap Conjunta", tasks: [] },
   ];
 
   bucketTasks.forEach(({ bucket, tasks }) => {
     tasks.forEach((task) => {
       const scope = scopeFromTask(task, categoryDescriptions);
-      const laneKey = scope === "Intellicore" ? "intellicore" : scope === "Conjunta" ? "conjunta" : "entel";
+      const laneKey = scope === "Intellicore" ? "intellicore" : scope === "Splunk" ? "splunk" : scope === "Conjunta" ? "conjunta" : "entel";
       const lane = lanes.find((item) => item.key === laneKey);
       if (!lane) return;
 
