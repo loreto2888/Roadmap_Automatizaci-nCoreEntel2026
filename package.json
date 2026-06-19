@@ -1,0 +1,11 @@
+{
+  "scripts": {
+    "start": "node server.js",
+    "planner:ids": "node get-planner-ids.js"
+  },
+  "dependencies": {
+    "@azure/identity": "^4.13.1",
+    "@microsoft/microsoft-graph-client": "^3.0.7",
+    "express": "^5.2.1"
+  }
+}

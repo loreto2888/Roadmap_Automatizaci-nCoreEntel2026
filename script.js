@@ -1,4 +1,4 @@
-const roadmap = [
+let roadmap = [
   {
     lane: "ENTEL",
     key: "entel",
@@ -522,15 +522,21 @@ let planningWindow = {
 };
 let knownAlertIds = new Set();
 let notificationsInitialized = false;
+let plannerSyncHealthy = false;
+let plannerSyncInFlight = false;
+let plannerSyncNotified = false;
+let plannerSignature = "";
 
-const allTasks = roadmap.flatMap((lane) =>
-  lane.tasks.map((task) => ({
-    ...task,
-    laneKey: lane.key,
-    laneTitle: lane.title,
-    scopeKey: scopeClass(task.scope).replace("scope-", ""),
-  }))
-);
+function getAllTasks() {
+  return roadmap.flatMap((lane) =>
+    lane.tasks.map((task) => ({
+      ...task,
+      laneKey: lane.key,
+      laneTitle: lane.title,
+      scopeKey: scopeClass(task.scope).replace("scope-", ""),
+    }))
+  );
+}
 
 const scopeLegend = [
   { key: "entel", label: "Entel" },
@@ -581,7 +587,7 @@ function taskWindow(task) {
 }
 
 function projectWindow() {
-  const windows = allTasks.map((task) => taskWindow(task));
+  const windows = getAllTasks().map((task) => taskWindow(task));
   if (!windows.length) {
     const today = new Date();
     return { start: today, end: today, totalDays: 1 };
@@ -760,7 +766,7 @@ function persistRoadmap() {
 }
 
 function getVisibleTasks() {
-  return allTasks.filter((task) => matchesFilter(task, activeFilter));
+  return getAllTasks().filter((task) => matchesFilter(task, activeFilter));
 }
 
 function ensureScopeBars() {
@@ -1058,7 +1064,7 @@ function renderRoadmap() {
     kicker.textContent = lane.kicker;
     title.textContent = lane.title;
 
-    const laneTasks = lane.tasks.map((task) => ({ ...task, laneKey: lane.key }));
+    const laneTasks = lane.tasks;
     const closed = laneTasks.filter((task) => task.completed).length;
 
     progress.textContent = `${closed}/${laneTasks.length} cerradas`;
@@ -1104,10 +1110,6 @@ function renderRoadmap() {
 
       check.addEventListener("click", () => {
         task.completed = !task.completed;
-        const dataTask = allTasks.find((item) => item.id === task.id);
-        if (dataTask) {
-          dataTask.completed = task.completed;
-        }
         renderRoadmap();
         updateStats();
       });
@@ -1178,6 +1180,89 @@ function startLivePulse() {
   document.body.classList.toggle("live-mode", autoAdvance.checked);
 }
 
+function sanitizeIncomingRoadmap(rawRoadmap) {
+  if (!Array.isArray(rawRoadmap)) return null;
+
+  return rawRoadmap
+    .map((lane, index) => {
+      const laneName = lane?.lane || `LANE-${index + 1}`;
+      const laneKey = String(lane?.key || laneName).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-");
+      const tasks = Array.isArray(lane?.tasks) ? lane.tasks : [];
+
+      return {
+        lane: laneName,
+        key: laneKey,
+        kicker: lane?.kicker || "Planner",
+        title: lane?.title || `Roadmap ${laneName}`,
+        tasks: tasks.map((task, taskIndex) => ({
+          id: task?.id || `${laneName}-${taskIndex + 1}`,
+          title: task?.title || "Sin titulo",
+          owner: task?.owner || "Sin asignar",
+          start: task?.start || "",
+          pending: task?.pending || "",
+          deposit: task?.deposit || "Curso",
+          status: task?.status || "En curso",
+          priority: task?.priority || "Medium",
+          scope: task?.scope || "Entel",
+          completed: Boolean(task?.completed),
+        })),
+      };
+    })
+    .filter((lane) => lane.tasks.length > 0);
+}
+
+async function syncFromPlannerApi() {
+  if (plannerSyncInFlight) return;
+  plannerSyncInFlight = true;
+
+  try {
+    const response = await fetch(`/api/planner/roadmap?t=${Date.now()}`, { cache: "no-store" });
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    const payload = await response.json();
+    const incomingRoadmap = sanitizeIncomingRoadmap(payload.roadmap);
+    if (!incomingRoadmap || !incomingRoadmap.length) {
+      throw new Error("Sin tareas disponibles desde Planner");
+    }
+
+    const nextSignature = JSON.stringify(incomingRoadmap);
+    if (nextSignature !== plannerSignature) {
+      roadmap = incomingRoadmap;
+      plannerSignature = nextSignature;
+      planningSignature = "";
+      knownAlertIds = new Set();
+      notificationsInitialized = false;
+      renderRoadmap();
+      ensureScopeBars();
+      updateStats();
+    }
+
+    plannerSyncHealthy = true;
+    if (!plannerSyncNotified) {
+      pushToast({ id: "PLANNER", priority: "Important", title: "Sincronizacion con Planner activa", owner: "Sistema" }, "important");
+      plannerSyncNotified = true;
+    }
+  } catch (error) {
+    if (plannerSyncHealthy) {
+      pushToast({ id: "PLANNER", priority: "Urgent", title: "Sincronizacion con Planner interrumpida", owner: "Sistema" }, "urgent");
+    }
+    plannerSyncHealthy = false;
+    console.warn("Planner sync error:", error);
+  } finally {
+    plannerSyncInFlight = false;
+  }
+}
+
+function startPlannerAutoSync() {
+  syncFromPlannerApi();
+  window.setInterval(() => {
+    if (!autoAdvance.checked) return;
+    syncFromPlannerApi();
+  }, 30000);
+}
+
 autoAdvance.addEventListener("change", startLivePulse);
 
 configureWebhook?.addEventListener("click", () => {
@@ -1196,4 +1281,5 @@ renderRoadmap();
 ensureScopeBars();
 updateStats();
 startLivePulse();
+startPlannerAutoSync();
 window.setInterval(updateStats, 1000);
