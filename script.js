@@ -1059,9 +1059,33 @@ function drawProgressChart() {
   if (!progressChart) return;
   const ctx = progressChart.getContext("2d");
   const allTasks = getAllTasks();
-  const completed = allTasks.filter((task) => task.completed).length;
-  const total = allTasks.length || 1;
-  const percent = Math.round((completed / total) * 100);
+  
+  // Agrupar por scope
+  const scopeColors = {
+    "Entel": "#67a9df",
+    "Intellicore": "#e4580d",
+    "Conjunta": "#ccb96a",
+    "Splunk": "#9dc77b"
+  };
+  
+  const scopeTotals = {
+    "Entel": { total: 0, completed: 0 },
+    "Intellicore": { total: 0, completed: 0 },
+    "Conjunta": { total: 0, completed: 0 },
+    "Splunk": { total: 0, completed: 0 }
+  };
+  
+  allTasks.forEach((task) => {
+    const scope = task.scope || "Entel";
+    if (scopeTotals[scope]) {
+      scopeTotals[scope].total++;
+      if (task.completed) scopeTotals[scope].completed++;
+    }
+  });
+  
+  const totalTasks = allTasks.length || 1;
+  const completedTasks = allTasks.filter((t) => t.completed).length;
+  const percent = Math.round((completedTasks / totalTasks) * 100);
   
   if (chartPercent) {
     chartPercent.textContent = `${percent}%`;
@@ -1074,21 +1098,84 @@ function drawProgressChart() {
 
   ctx.clearRect(0, 0, progressChart.width, progressChart.height);
 
-  // Fondo del donut (gris oscuro)
-  ctx.beginPath();
-  ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
-  ctx.lineWidth = lineWidth;
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.1)";
-  ctx.stroke();
+  // Dibujar segmentos por scope (pendientes + completadas)
+  let currentAngle = -Math.PI / 2;
+  
+  Object.entries(scopeTotals).forEach(([scope, data]) => {
+    const scopePercent = (data.total / totalTasks) * (Math.PI * 2);
+    const color = scopeColors[scope];
+    
+    if (data.total > 0) {
+      // Segmento de pendientes (más oscuro)
+      const pendingPercent = ((data.total - data.completed) / totalTasks) * (Math.PI * 2);
+      if (pendingPercent > 0.05) {
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, currentAngle, currentAngle + pendingPercent);
+        ctx.lineWidth = lineWidth;
+        ctx.strokeStyle = color;
+        ctx.globalAlpha = 0.4;
+        ctx.lineCap = "round";
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+      }
+      currentAngle += pendingPercent;
+      
+      // Segmento de completadas (full color)
+      const completedPercent = (data.completed / totalTasks) * (Math.PI * 2);
+      if (completedPercent > 0.05) {
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, radius, currentAngle, currentAngle + completedPercent);
+        ctx.lineWidth = lineWidth;
+        ctx.strokeStyle = color;
+        ctx.globalAlpha = 1;
+        ctx.lineCap = "round";
+        ctx.stroke();
+      }
+      currentAngle += completedPercent;
+    }
+  });
+  
+  // Renderizar desglose
+  updateBreakdown(scopeTotals);
+}
 
-  // Progreso completado (verde/cyan)
-  const endAngle = (completed / total) * Math.PI * 2 - Math.PI / 2;
-  ctx.beginPath();
-  ctx.arc(centerX, centerY, radius, -Math.PI / 2, endAngle);
-  ctx.lineWidth = lineWidth;
-  ctx.strokeStyle = "#39d0c2";
-  ctx.lineCap = "round";
-  ctx.stroke();
+function updateBreakdown(scopeTotals) {
+  const breakdownRows = document.getElementById("breakdownRows");
+  if (!breakdownRows) return;
+  
+  const scopeColors = {
+    "Entel": "#67a9df",
+    "Intellicore": "#e4580d",
+    "Conjunta": "#ccb96a",
+    "Splunk": "#9dc77b"
+  };
+  
+  breakdownRows.innerHTML = "";
+  
+  Object.entries(scopeTotals).forEach(([scope, data]) => {
+    const pending = data.total - data.completed;
+    if (data.total === 0) return;
+    
+    const row = document.createElement("div");
+    row.className = "breakdown-row";
+    
+    const dot = document.createElement("div");
+    dot.className = "breakdown-dot";
+    dot.style.backgroundColor = scopeColors[scope];
+    
+    const label = document.createElement("div");
+    label.className = "breakdown-label";
+    label.textContent = `${scope}`;
+    
+    const count = document.createElement("div");
+    count.className = "breakdown-count";
+    count.innerHTML = `<strong>${pending}</strong> sin hacer`;
+    
+    row.appendChild(dot);
+    row.appendChild(label);
+    row.appendChild(count);
+    breakdownRows.appendChild(row);
+  });
 }
 
 function renderRoadmap() {

@@ -973,6 +973,15 @@ h1 {
   backdrop-filter: blur(20px);
 }
 
+.chart-wrapper {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  align-items: center;
+  width: 100%;
+  max-width: 600px;
+}
+
 .chart-container {
   position: relative;
   width: 220px;
@@ -1007,6 +1016,55 @@ h1 {
   color: var(--muted);
   margin-top: 4px;
 }
+
+.chart-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.breakdown-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.breakdown-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.breakdown-row {
+  display: grid;
+  grid-template-columns: 12px 1fr auto;
+  gap: 10px;
+  align-items: center;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 0.85rem;
+}
+
+.breakdown-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.breakdown-label {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.breakdown-count {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
 
 .badge-delay.due-soon {
   background: rgba(255, 184, 107, 0.18);

@@ -65,11 +65,18 @@
       </header>
 
       <section class="chart-section" aria-label="Gráfica de progreso">
-        <div class="chart-container">
-          <canvas id="progressChart" width="200" height="200"></canvas>
-          <div class="chart-label">
-            <strong id="chartPercent">0%</strong>
-            <small>completado</small>
+        <div class="chart-wrapper">
+          <div class="chart-container">
+            <canvas id="progressChart" width="220" height="220"></canvas>
+            <div class="chart-label">
+              <strong id="chartPercent">0%</strong>
+              <small>completado</small>
+            </div>
+          </div>
+          
+          <div class="chart-breakdown">
+            <div class="breakdown-title">Desglose por frente</div>
+            <div class="breakdown-rows" id="breakdownRows"></div>
           </div>
         </div>
       </section>
