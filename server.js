@@ -252,9 +252,28 @@ app.get("/api/planner/roadmap", async (_req, res) => {
 });
 
 app.get("/api/planner/dependencies", (_req, res) => {
+  // Agrupar dependencias por scope de origen
+  const depsByScope = {
+    Entel: [],
+    Intellicore: [],
+    Splunk: [],
+    Conjunta: [],
+  };
+
+  Object.entries(cache.dependencies || {}).forEach(([taskId, deps]) => {
+    const taskScope = taskId.startsWith("INT") ? "Intellicore" : taskId.startsWith("SPL") ? "Splunk" : taskId.startsWith("CON") ? "Conjunta" : "Entel";
+    if (depsByScope[taskScope]) {
+      depsByScope[taskScope].push({ task: taskId, dependsOn: deps });
+    }
+  });
+
   res.json({
     dependencies: cache.dependencies || {},
-    available: Object.keys(cache.dependencies || {}).length > 0,
+    byScope: depsByScope,
+    summary: {
+      total: Object.keys(cache.dependencies || {}).length,
+      intellicoreDependsOnEntel: (depsByScope.Intellicore || []).filter((d) => d.dependsOn.some((t) => t.startsWith("ENT"))).length,
+    },
   });
 });
 

@@ -1178,6 +1178,56 @@ function updateBreakdown(scopeTotals) {
   });
 }
 
+function updateDependencies(dependencies) {
+  const dependenciesSection = document.getElementById("dependenciesSection");
+  const dependenciesList = document.getElementById("dependenciesList");
+  if (!dependenciesSection || !dependenciesList) return;
+  
+  // Analizar dependencias cruzadas entre scopes
+  const crossScopeDeps = {};
+  
+  Object.entries(dependencies).forEach(([task, deps]) => {
+    const taskScope = task.startsWith("INT") ? "Intellicore" : task.startsWith("SPL") ? "Splunk" : task.startsWith("CON") ? "Conjunta" : "Entel";
+    
+    deps.forEach((depTask) => {
+      const depScope = depTask.startsWith("INT") ? "Intellicore" : depTask.startsWith("SPL") ? "Splunk" : depTask.startsWith("CON") ? "Conjunta" : "Entel";
+      
+      if (taskScope !== depScope) {
+        const key = `${taskScope} depende de ${depScope}`;
+        crossScopeDeps[key] = (crossScopeDeps[key] || 0) + 1;
+      }
+    });
+  });
+  
+  if (Object.keys(crossScopeDeps).length === 0) {
+    dependenciesSection.style.display = "none";
+    return;
+  }
+  
+  dependenciesSection.style.display = "flex";
+  dependenciesList.innerHTML = "";
+  
+  Object.entries(crossScopeDeps).forEach(([depStr, count]) => {
+    const item = document.createElement("div");
+    item.className = "dependency-item";
+    
+    if (depStr.includes("Intellicore") && depStr.includes("Entel")) {
+      item.classList.add("intellicore-entel");
+    }
+    
+    const text = document.createElement("span");
+    text.textContent = depStr;
+    
+    const badge = document.createElement("span");
+    badge.className = "dependency-badge";
+    badge.textContent = `${count} tarea${count > 1 ? 's' : ''}`;
+    
+    item.appendChild(text);
+    item.appendChild(badge);
+    dependenciesList.appendChild(item);
+  });
+}
+
 function renderRoadmap() {
   board.innerHTML = "";
 
@@ -1367,6 +1417,11 @@ async function syncFromPlannerApi() {
       renderRoadmap();
       ensureScopeBars();
       updateStats();
+    }
+
+    // Actualizar dependencias si están disponibles
+    if (payload.dependencies) {
+      updateDependencies(payload.dependencies);
     }
 
     plannerSyncHealthy = true;
