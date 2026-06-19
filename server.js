@@ -119,6 +119,36 @@ function ownerFromTask(task, ownerMap) {
   return ownerMap[assignmentIds[0]] || assignmentIds[0];
 }
 
+function findTaskDependencies(allTasks) {
+  // Extraer IDs de tareas (formato: SCOPE-###)
+  const taskMap = new Map();
+  allTasks.forEach((task) => {
+    const id = task.title?.match(/\b[A-Z]+-\d+\b/)?.[0];
+    if (id) taskMap.set(id, task);
+  });
+
+  const dependencies = {};
+  
+  // Buscar dependencias en el título y descripción
+  allTasks.forEach((task) => {
+    const taskId = task.title?.match(/\b[A-Z]+-\d+\b/)?.[0];
+    if (!taskId) return;
+    
+    const text = `${task.title || ""} ${task.description || ""}`.toUpperCase();
+    const foundIds = text.match(/\b[A-Z]+-\d+\b/g) || [];
+    
+    const deps = foundIds
+      .filter((id) => id !== taskId && taskMap.has(id))
+      .filter((v, i, a) => a.indexOf(v) === i);
+    
+    if (deps.length > 0) {
+      dependencies[taskId] = deps;
+    }
+  });
+  
+  return dependencies;
+}
+
 async function buildRoadmapFromPlanner() {
   const [bucketResult, planDetails] = await Promise.all([
     fetchJson(`/planner/plans/${PLAN_ID}/buckets`),
@@ -173,35 +203,59 @@ async function buildRoadmapFromPlanner() {
     });
   });
 
-  return lanes;
+  // Calcular dependencias basadas en todos los títulos
+  const allTasks = [];
+  lanes.forEach((lane) => {
+    lane.tasks.forEach((task) => {
+      allTasks.push(task);
+    });
+  });
+  
+  const dependencies = findTaskDependencies(
+    allTasks.map((t) => ({
+      title: `${t.id} ${t.title}`,
+      description: "",
+    }))
+  );
+
+  return { lanes, dependencies };
 }
 
 let cache = {
   fetchedAt: 0,
   roadmap: null,
+  dependencies: {},
 };
 
 app.get("/api/planner/roadmap", async (_req, res) => {
   try {
     const now = Date.now();
     if (cache.roadmap && now - cache.fetchedAt < 15000) {
-      res.json({ roadmap: cache.roadmap, fetchedAt: new Date(cache.fetchedAt).toISOString(), cached: true });
+      res.json({ roadmap: cache.roadmap, dependencies: cache.dependencies, fetchedAt: new Date(cache.fetchedAt).toISOString(), cached: true });
       return;
     }
 
-    const roadmap = await buildRoadmapFromPlanner();
+    const { lanes, dependencies } = await buildRoadmapFromPlanner();
     cache = {
       fetchedAt: now,
-      roadmap,
+      roadmap: lanes,
+      dependencies,
     };
 
-    res.json({ roadmap, fetchedAt: new Date(now).toISOString(), cached: false });
+    res.json({ roadmap: lanes, dependencies, fetchedAt: new Date(now).toISOString(), cached: false });
   } catch (error) {
     res.status(500).json({
       error: "planner_sync_failed",
       message: error.message,
     });
   }
+});
+
+app.get("/api/planner/dependencies", (_req, res) => {
+  res.json({
+    dependencies: cache.dependencies || {},
+    available: Object.keys(cache.dependencies || {}).length > 0,
+  });
 });
 
 app.use(express.static(process.cwd()));
