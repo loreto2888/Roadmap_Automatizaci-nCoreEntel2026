@@ -66,10 +66,39 @@ function scopeFromTask(task, categoryDescriptions) {
     .map(([key]) => (categoryDescriptions && categoryDescriptions[key]) || "")
     .filter(Boolean);
 
-  const haystack = [task.title || "", ...activeCategories, task.id || ""].join(" ").toLowerCase();
-  if (haystack.includes("intellicore")) return "Intellicore";
-  if (haystack.includes("splunk") || haystack.includes("dplink")) return "Splunk";
-  if (haystack.includes("conjunta") || haystack.includes("conjunto")) return "Conjunta";
+  const haystack = normalizeIdentifier([task.title || "", ...activeCategories, task.id || ""].join(" "));
+  if (extractTaskCode(task.title || task.id).startsWith("GESTION-")) return "Gestion";
+  if (haystack.includes("INTELLICORE")) return "Intellicore";
+  if (haystack.includes("SPLUNK") || haystack.includes("DPLINK")) return "Splunk";
+  if (haystack.includes("CONJUNTA") || haystack.includes("CONJUNTO")) return "Conjunta";
+  return "Entel";
+}
+
+function normalizeIdentifier(value) {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toUpperCase();
+}
+
+function extractTaskCode(value) {
+  return normalizeIdentifier(value).match(/\b[A-Z]+-\d+\b/)?.[0] || "";
+}
+
+function scopeKeyFromLabel(scope) {
+  if (scope === "Intellicore") return "intellicore";
+  if (scope === "Gestion") return "gestion";
+  if (scope === "Splunk") return "splunk";
+  if (scope === "Conjunta") return "conjunta";
+  return "entel";
+}
+
+function scopeFromTaskId(taskId) {
+  const text = normalizeIdentifier(taskId);
+  if (text.startsWith("INT")) return "Intellicore";
+  if (text.startsWith("GESTION")) return "Gestion";
+  if (text.startsWith("SPL")) return "Splunk";
+  if (text.startsWith("CON")) return "Conjunta";
   return "Entel";
 }
 
@@ -124,7 +153,7 @@ function findTaskDependencies(allTasks) {
   // Extraer IDs de tareas (formato: SCOPE-###)
   const taskMap = new Map();
   allTasks.forEach((task) => {
-    const id = task.title?.match(/\b[A-Z]+-\d+\b/)?.[0];
+    const id = extractTaskCode(task.title);
     if (id) taskMap.set(id, task);
   });
 
@@ -132,10 +161,10 @@ function findTaskDependencies(allTasks) {
   
   // Buscar dependencias en el título y descripción
   allTasks.forEach((task) => {
-    const taskId = task.title?.match(/\b[A-Z]+-\d+\b/)?.[0];
+    const taskId = extractTaskCode(task.title);
     if (!taskId) return;
     
-    const text = `${task.title || ""} ${task.description || ""}`.toUpperCase();
+    const text = normalizeIdentifier(`${task.title || ""} ${task.description || ""}`);
     const foundIds = text.match(/\b[A-Z]+-\d+\b/g) || [];
     
     const deps = foundIds
@@ -171,6 +200,7 @@ async function buildRoadmapFromPlanner() {
   const lanes = [
     { key: "entel", lane: "ENTEL", kicker: "Planner", title: "Roadmap Entel", tasks: [] },
     { key: "intellicore", lane: "INTELLICORE", kicker: "Planner", title: "Roadmap Intellicore", tasks: [] },
+    { key: "gestion", lane: "GESTION", kicker: "Planner", title: "Roadmap Gestion", tasks: [] },
     { key: "splunk", lane: "SPLUNK", kicker: "Planner", title: "Roadmap Splunk", tasks: [] },
     { key: "conjunta", lane: "CONJUNTA", kicker: "Planner", title: "Roadmap Conjunta", tasks: [] },
   ];
@@ -178,12 +208,12 @@ async function buildRoadmapFromPlanner() {
   bucketTasks.forEach(({ bucket, tasks }) => {
     tasks.forEach((task) => {
       const scope = scopeFromTask(task, categoryDescriptions);
-      const laneKey = scope === "Intellicore" ? "intellicore" : scope === "Splunk" ? "splunk" : scope === "Conjunta" ? "conjunta" : "entel";
+      const laneKey = scopeKeyFromLabel(scope);
       const lane = lanes.find((item) => item.key === laneKey);
       if (!lane) return;
 
       lane.tasks.push({
-        id: task.title?.match(/\b[A-Z]+-\d+\b/)?.[0] || task.id,
+        id: extractTaskCode(task.title) || task.id,
         title: task.title || "Sin titulo",
         owner: ownerFromTask(task, ownerMap),
         start: formatDate(task.startDateTime || task.createdDateTime),
@@ -306,12 +336,13 @@ app.get("/api/planner/dependencies", (_req, res) => {
   const depsByScope = {
     Entel: [],
     Intellicore: [],
+    Gestion: [],
     Splunk: [],
     Conjunta: [],
   };
 
   Object.entries(cache.dependencies || {}).forEach(([taskId, deps]) => {
-    const taskScope = taskId.startsWith("INT") ? "Intellicore" : taskId.startsWith("SPL") ? "Splunk" : taskId.startsWith("CON") ? "Conjunta" : "Entel";
+    const taskScope = scopeFromTaskId(taskId);
     if (depsByScope[taskScope]) {
       depsByScope[taskScope].push({ task: taskId, dependsOn: deps });
     }

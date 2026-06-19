@@ -241,6 +241,10 @@ h1 {
   border-color: rgba(228, 88, 13, 0.45);
 }
 
+.chip[data-filter="gestion"] {
+  border-color: rgba(217, 111, 211, 0.45);
+}
+
 .chip[data-filter="splunk"] {
   border-color: rgba(157, 199, 123, 0.45);
 }
@@ -261,6 +265,11 @@ h1 {
 .chip[data-filter="intellicore"].active {
   border-color: #e4580d;
   background: rgba(228, 88, 13, 0.25);
+}
+
+.chip[data-filter="gestion"].active {
+  border-color: #d96fd3;
+  background: rgba(217, 111, 211, 0.25);
 }
 
 .chip[data-filter="splunk"].active {
@@ -467,6 +476,10 @@ h1 {
 
 .planning-bar.scope-intellicore {
   background: #e4580d;
+}
+
+.planning-bar.scope-gestion {
+  background: #d96fd3;
 }
 
 .planning-bar.scope-splunk {
@@ -769,6 +782,10 @@ h1 {
   background: #e4580d;
 }
 
+.scope-bar-fill.scope-gestion {
+  background: #d96fd3;
+}
+
 .scope-bar-fill.scope-splunk {
   background: #9dc77b;
 }
@@ -939,6 +956,11 @@ h1 {
 .badge-scope.scope-intellicore {
   background: #e4580d;
   color: #fff6ef;
+}
+
+.badge-scope.scope-gestion {
+  background: #f0c0ec;
+  color: #7f266f;
 }
 
 .badge-scope.scope-splunk {
@@ -1119,6 +1141,10 @@ h1 {
 
 .task-card.scope-intellicore {
   border-left: 3px solid #e4580d;
+}
+
+.task-card.scope-gestion {
+  border-left: 3px solid #d96fd3;
 }
 
 .task-card.scope-splunk {

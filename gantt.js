@@ -20,6 +20,7 @@ function normalizeScope(scope) {
   const text = (scope || "").toLowerCase();
   if (text.includes("entel")) return "entel";
   if (text.includes("intellicore")) return "intellicore";
+  if (text.includes("gestion") || text.includes("gerencia") || text.includes("ejecutiv")) return "gestion";
   if (text.includes("splunk") || text.includes("dplink")) return "splunk";
   if (text.includes("conjunta") || text.includes("conjunto")) return "conjunta";
   return "entel";

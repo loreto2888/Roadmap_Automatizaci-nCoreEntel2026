@@ -7,6 +7,7 @@
   --line: rgba(255, 255, 255, 0.12);
   --entel: #67a9df;
   --intellicore: #e4580d;
+  --gestion: #d96fd3;
   --splunk: #9dc77b;
   --conjunta: #ccb96a;
   font-family: "Manrope", sans-serif;
@@ -123,6 +124,11 @@ h1 {
   color: #fff5ee;
 }
 
+.legend-item.gestion {
+  background: #f0c0ec;
+  color: #7f266f;
+}
+
 .legend-item.splunk {
   background: #c8e3a2;
   color: #3c6524;
@@ -205,6 +211,10 @@ h1 {
 
 .bar.intellicore {
   background: linear-gradient(90deg, rgba(228, 88, 13, 0.95), rgba(228, 88, 13, 0.55));
+}
+
+.bar.gestion {
+  background: linear-gradient(90deg, rgba(217, 111, 211, 0.95), rgba(217, 111, 211, 0.55));
 }
 
 .bar.splunk {

@@ -10,36 +10,36 @@ let roadmap = [
         title: "VM Provisoria Desarrollo ID",
         owner: "Johanna B.",
         start: "15-04-2026",
-        pending: "",
-        deposit: "Pendiente",
-        status: "En curso",
+        pending: "16-06-2026",
+        deposit: "Cierre",
+        status: "Completa",
         priority: "Important",
         scope: "Entel",
-        completed: false,
+        completed: true,
       },
       {
         id: "ENTEL-002",
         title: "Informar Estado VM Principal Definitiva",
         owner: "Johanna B.",
         start: "15-04-2026",
-        pending: "",
-        deposit: "Pendiente",
-        status: "En curso",
+        pending: "16-06-2026",
+        deposit: "Cierre",
+        status: "Completa",
         priority: "Important",
         scope: "Entel",
-        completed: false,
+        completed: true,
       },
       {
         id: "ENTEL-003",
         title: "Entrega VM Principal del Proyecto",
         owner: "Johanna B.",
         start: "15-04-2026",
-        pending: "",
-        deposit: "Pendiente",
-        status: "En curso",
+        pending: "16-06-2026",
+        deposit: "Cierre",
+        status: "Completa",
         priority: "Important",
         scope: "Entel",
-        completed: false,
+        completed: true,
       },
       {
         id: "ENTEL-004",
@@ -126,6 +126,30 @@ let roadmap = [
         completed: true,
       },
       {
+        id: "ENTEL-011",
+        title: "Cuentas PAM Sistemicas",
+        owner: "Johanna B.",
+        start: "08-06-2026",
+        pending: "19-06-2026",
+        deposit: "Revision",
+        status: "No iniciado",
+        priority: "Urgent",
+        scope: "Entel",
+        completed: false,
+      },
+      {
+        id: "ENTEL-012",
+        title: "Evaluacion y necesidades IR21",
+        owner: "Johanna B.",
+        start: "09-06-2026",
+        pending: "22-06-2026",
+        deposit: "Revision",
+        status: "No iniciado",
+        priority: "Urgent",
+        scope: "Entel",
+        completed: false,
+      },
+      {
         id: "ENTEL-013",
         title: "Habilitación Acceso VPN / ZTNA",
         owner: "Johanna B.",
@@ -201,13 +225,13 @@ let roadmap = [
         id: "ENTEL-019",
         title: "Entregar Responsables Técnicos por Plataforma",
         owner: "Johanna B.",
-        start: "",
-        pending: "",
+        start: "18-05-2026",
+        pending: "05-06-2026",
         deposit: "Curso",
-        status: "Completa",
+        status: "En curso",
         priority: "Medium",
         scope: "Entel",
-        completed: true,
+        completed: false,
       },
       {
         id: "ENTEL-020",
@@ -218,6 +242,18 @@ let roadmap = [
         deposit: "Pendiente",
         status: "No iniciado",
         priority: "Medium",
+        scope: "Entel",
+        completed: false,
+      },
+      {
+        id: "ENTEL-021",
+        title: "VM secundaria (Tomas san martin)",
+        owner: "Johanna B.",
+        start: "11-06-2026",
+        pending: "18-06-2026",
+        deposit: "Pendiente",
+        status: "En curso",
+        priority: "Important",
         scope: "Entel",
         completed: false,
       },
@@ -235,11 +271,11 @@ let roadmap = [
         owner: "Johanna B.",
         start: "15-04-2026",
         pending: "",
-        deposit: "Curso",
-        status: "En curso",
+        deposit: "Cierre",
+        status: "Completa",
         priority: "Medium",
         scope: "Intellicore",
-        completed: false,
+        completed: true,
       },
       {
         id: "INTELLICORE-002",
@@ -247,11 +283,11 @@ let roadmap = [
         owner: "Johanna B.",
         start: "15-04-2026",
         pending: "",
-        deposit: "Curso",
-        status: "En curso",
+        deposit: "Cierre",
+        status: "Completa",
         priority: "Medium",
         scope: "Intellicore",
-        completed: false,
+        completed: true,
       },
       {
         id: "INTELLICORE-003",
@@ -278,20 +314,8 @@ let roadmap = [
         completed: true,
       },
       {
-        id: "INTELLICORE-005",
-        title: "Desarrollar Dashboard Down Detector",
-        owner: "A / M",
-        start: "11-05-2026",
-        pending: "",
-        deposit: "Curso",
-        status: "En curso",
-        priority: "Medium",
-        scope: "Splunk",
-        completed: false,
-      },
-      {
         id: "INTELLICORE-006",
-        title: "Formalizar Seguimiento Ejecutivo",
+        title: "Formalizar Seguimiento Ejecutivo Semanal",
         owner: "Johanna B.",
         start: "04-05-2026",
         pending: "",
@@ -303,15 +327,15 @@ let roadmap = [
       },
       {
         id: "INTELLICORE-007",
-        title: "Ordenamiento Roadmap y Priorización",
+        title: "Ordenamiento Roadmap y Prioridades",
         owner: "Johanna B.",
         start: "04-05-2026",
-        pending: "",
-        deposit: "Curso",
-        status: "En curso",
+        pending: "26-06-2026",
+        deposit: "Cierre",
+        status: "Completa",
         priority: "Medium",
         scope: "Intellicore",
-        completed: false,
+        completed: true,
       },
       {
         id: "INTELLICORE-008",
@@ -343,23 +367,23 @@ let roadmap = [
         owner: "Johanna B.",
         start: "11-05-2026",
         pending: "",
-        deposit: "Curso",
-        status: "En curso",
+        deposit: "Cierre",
+        status: "Completa",
         priority: "Medium",
         scope: "Intellicore",
-        completed: false,
+        completed: true,
       },
       {
         id: "INTELLICORE-012",
-        title: "Ordenamiento Roadmap Ejecutivo",
+        title: "Ordenamiento Roadmap Ejecutivo Proyecto",
         owner: "Johanna B.",
         start: "",
         pending: "",
-        deposit: "Curso",
-        status: "En curso",
+        deposit: "Cierre",
+        status: "Completa",
         priority: "Medium",
         scope: "Intellicore",
-        completed: false,
+        completed: true,
       },
       {
         id: "INTELLICORE-013",
@@ -382,7 +406,7 @@ let roadmap = [
         deposit: "Curso",
         status: "En curso",
         priority: "Medium",
-        scope: "Splunk",
+        scope: "Intellicore",
         completed: false,
       },
       {
@@ -394,7 +418,7 @@ let roadmap = [
         deposit: "Curso",
         status: "En curso",
         priority: "Medium",
-        scope: "Splunk",
+        scope: "Intellicore",
         completed: false,
       },
       {
@@ -406,7 +430,7 @@ let roadmap = [
         deposit: "Pendiente",
         status: "No iniciado",
         priority: "Medium",
-        scope: "Splunk",
+        scope: "Intellicore",
         completed: false,
       },
       {
@@ -446,12 +470,12 @@ let roadmap = [
         title: "Evaluación Bitbucket vs GitLab",
         owner: "Johanna B.",
         start: "11-05-2026",
-        pending: "",
-        deposit: "Curso",
-        status: "En curso",
+        pending: "19-06-2026",
+        deposit: "Cierre",
+        status: "Completa",
         priority: "Medium",
         scope: "Conjunta",
-        completed: false,
+        completed: true,
       },
       {
         id: "CONJUNTA-003",
@@ -479,7 +503,181 @@ let roadmap = [
       },
     ],
   },
+  {
+    lane: "GESTION",
+    key: "gestion",
+    kicker: "Frente 04",
+    title: "Roadmap Gestion",
+    tasks: [
+      {
+        id: "GESTION-001",
+        title: "Capacitacion Agilidad",
+        owner: "Johanna Barrientos A.",
+        start: "08-06-2026",
+        pending: "26-06-2026",
+        deposit: "Pendiente",
+        status: "No iniciado",
+        priority: "Medium",
+        scope: "Gestion",
+        completed: false,
+      },
+      {
+        id: "GESTION-002",
+        title: "Presentacion defensa GitLab y Bitbucket",
+        owner: "Johanna Barrientos A.",
+        start: "15-06-2026",
+        pending: "19-06-2026",
+        deposit: "Cierre",
+        status: "Completa",
+        priority: "Important",
+        scope: "Gestion",
+        completed: true,
+      },
+    ],
+  },
+  {
+    lane: "SPLUNK",
+    key: "splunk",
+    kicker: "Frente 05",
+    title: "Roadmap Splunk",
+    tasks: [
+      {
+        id: "SPLUNK-001",
+        title: "Investigación sobre DSDL Splunk solicitado por Cristian Escobar",
+        owner: "Jorge Bourguet B.",
+        start: "12-06-2026",
+        pending: "",
+        deposit: "Curso",
+        status: "En curso",
+        priority: "Medium",
+        scope: "Splunk",
+        completed: false,
+      },
+      {
+        id: "SPLUNK-002",
+        title: "Desarrollo e implementación dashboards tráficos internacional",
+        owner: "A / M / J",
+        start: "19-05-2026",
+        pending: "",
+        deposit: "Revision",
+        status: "En curso",
+        priority: "Medium",
+        scope: "Splunk",
+        completed: false,
+      },
+      {
+        id: "SPLUNK-003",
+        title: "Desarrollo e implementación dashboard 3PLAY estado red Splunk",
+        owner: "A / M / J",
+        start: "25-05-2026",
+        pending: "",
+        deposit: "Curso",
+        status: "No iniciado",
+        priority: "Medium",
+        scope: "Splunk",
+        completed: false,
+      },
+      {
+        id: "SPLUNK-004",
+        title: "Ajustes dashboard panel ejecutivo y aplicación alternativas macro",
+        owner: "Jorge Bourguet B.",
+        start: "01-06-2026",
+        pending: "",
+        deposit: "Revision",
+        status: "En curso",
+        priority: "Medium",
+        scope: "Splunk",
+        completed: false,
+      },
+      {
+        id: "SPLUNK-005",
+        title: "Desarrollar Dashboard Down Detector en Splunk",
+        owner: "A / M",
+        start: "11-05-2026",
+        pending: "",
+        deposit: "Curso",
+        status: "En curso",
+        priority: "Medium",
+        scope: "Splunk",
+        completed: false,
+      },
+    ],
+  },
 ];
+
+const scopeDefinitions = [
+  { key: "entel", label: "Entel", lane: "ENTEL", title: "Roadmap Entel", kicker: "Frente 01" },
+  { key: "intellicore", label: "Intellicore", lane: "INTELLICORE", title: "Roadmap Intellicore", kicker: "Frente 02" },
+  { key: "gestion", label: "Gestion", lane: "GESTION", title: "Roadmap Gestion", kicker: "Frente 03" },
+  { key: "splunk", label: "Splunk", lane: "SPLUNK", title: "Roadmap Splunk", kicker: "Frente 04" },
+  { key: "conjunta", label: "Conjunta", lane: "CONJUNTA", title: "Roadmap Conjunta", kicker: "Frente 05" },
+];
+
+function normalizeIdentifier(value) {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toUpperCase();
+}
+
+function extractTaskCode(value) {
+  return normalizeIdentifier(value).match(/\b[A-Z]+-\d+\b/)?.[0] || "";
+}
+
+function normalizedScopeKey(value) {
+  const normalized = normalizeIdentifier(value);
+  if (extractTaskCode(value).startsWith("GESTION-")) return "gestion";
+  if (normalized.includes("GESTION")) return "gestion";
+  if (normalized.includes("ENTEL")) return "entel";
+  if (normalized.includes("INTELLICORE")) return "intellicore";
+  if (normalized.includes("SPLUNK") || normalized.includes("DPLINK")) return "splunk";
+  if (normalized.includes("CONJUNTA") || normalized.includes("CONJUNTO")) return "conjunta";
+  return "entel";
+}
+
+function scopeLabelFromKey(scopeKey) {
+  return scopeDefinitions.find((scope) => scope.key === scopeKey)?.label || "Entel";
+}
+
+function inferTaskScope(task) {
+  const explicitScopeKey = task.scope ? normalizedScopeKey(task.scope) : "";
+  if (explicitScopeKey) {
+    return scopeLabelFromKey(explicitScopeKey);
+  }
+
+  const scopeKey = normalizedScopeKey(`${task.title || ""} ${task.id || ""}`);
+  return scopeLabelFromKey(scopeKey);
+}
+
+function regroupRoadmapByScope(sourceRoadmap) {
+  const laneMap = new Map(
+    scopeDefinitions.map((scope) => [
+      scope.key,
+      {
+        lane: scope.lane,
+        key: scope.key,
+        kicker: scope.kicker,
+        title: scope.title,
+        tasks: [],
+      },
+    ])
+  );
+
+  sourceRoadmap.forEach((lane) => {
+    (lane.tasks || []).forEach((task) => {
+      const scope = inferTaskScope(task);
+      const laneKey = normalizedScopeKey(scope);
+      const targetLane = laneMap.get(laneKey) || laneMap.get("entel");
+      targetLane.tasks.push({ ...task, scope });
+    });
+  });
+
+  return scopeDefinitions
+    .map((scope) => laneMap.get(scope.key))
+    .filter((lane) => lane && lane.tasks.length > 0);
+}
+
+roadmap = regroupRoadmapByScope(roadmap);
 
 const board = document.getElementById("board");
 const laneTemplate = document.getElementById("laneTemplate");
@@ -542,12 +740,7 @@ function getAllTasks() {
   );
 }
 
-const scopeLegend = [
-  { key: "entel", label: "Entel" },
-  { key: "intellicore", label: "Intellicore" },
-  { key: "splunk", label: "Splunk" },
-  { key: "conjunta", label: "Conjunta" },
-];
+const scopeLegend = scopeDefinitions.map(({ key, label }) => ({ key, label }));
 
 function formatClock(date) {
   return date.toLocaleTimeString("es-ES", { hour12: false });
@@ -746,11 +939,12 @@ function badgeClass(priority) {
 }
 
 function scopeClass(scope) {
-  const normalized = (scope || "").toLowerCase();
-  if (normalized.includes("entel")) return "scope-entel";
-  if (normalized.includes("intellicore")) return "scope-intellicore";
-  if (normalized.includes("splunk") || normalized.includes("dplink")) return "scope-splunk";
-  if (normalized.includes("conjunta") || normalized.includes("conjunto")) return "scope-conjunta";
+  const normalized = normalizeIdentifier(scope);
+  if (normalized.includes("GESTION")) return "scope-gestion";
+  if (normalized.includes("ENTEL")) return "scope-entel";
+  if (normalized.includes("INTELLICORE")) return "scope-intellicore";
+  if (normalized.includes("SPLUNK") || normalized.includes("DPLINK")) return "scope-splunk";
+  if (normalized.includes("CONJUNTA") || normalized.includes("CONJUNTO")) return "scope-conjunta";
   return "scope-entel";
 }
 
@@ -818,6 +1012,7 @@ function updateCharts(visible, percent) {
   const counts = {
     entel: 0,
     intellicore: 0,
+    gestion: 0,
     splunk: 0,
     conjunta: 0,
   };
@@ -1023,9 +1218,11 @@ function updateStats() {
             ? "Entel"
             : scopeKey === "scope-intellicore"
               ? "Intellicore"
-              : scopeKey === "scope-splunk"
-                ? "Splunk"
-                : "Conjunta";
+              : scopeKey === "scope-gestion"
+                ? "Gestion"
+                : scopeKey === "scope-splunk"
+                  ? "Splunk"
+                  : "Conjunta";
         acc[label] = (acc[label] || 0) + 1;
         return acc;
       }, {});
@@ -1065,6 +1262,7 @@ function drawProgressChart() {
   const scopeColors = {
     "Entel": "#67a9df",
     "Intellicore": "#e4580d",
+    "Gestion": "#d96fd3",
     "Conjunta": "#ccb96a",
     "Splunk": "#9dc77b"
   };
@@ -1072,6 +1270,7 @@ function drawProgressChart() {
   const scopeTotals = {
     "Entel": { total: 0, completed: 0 },
     "Intellicore": { total: 0, completed: 0 },
+    "Gestion": { total: 0, completed: 0 },
     "Conjunta": { total: 0, completed: 0 },
     "Splunk": { total: 0, completed: 0 }
   };
@@ -1147,6 +1346,7 @@ function updateBreakdown(scopeTotals) {
   const scopeColors = {
     "Entel": "#67a9df",
     "Intellicore": "#e4580d",
+    "Gestion": "#d96fd3",
     "Conjunta": "#ccb96a",
     "Splunk": "#9dc77b"
   };
@@ -1187,11 +1387,26 @@ function updateDependencies(dependencies) {
   // Analizar dependencias cruzadas entre scopes
   const crossScopeDeps = {};
   
+  const scopeByTaskId = new Map(
+    getAllTasks().map((task) => [String(task.id || "").toUpperCase(), task.scope || "Entel"])
+  );
+
+  const inferDependencyScope = (taskId) => {
+    const text = String(taskId || "").toUpperCase();
+    const known = scopeByTaskId.get(text);
+    if (known) return known;
+    if (text.startsWith("INT")) return "Intellicore";
+    if (normalizeIdentifier(text).startsWith("GESTION")) return "Gestion";
+    if (text.startsWith("SPL")) return "Splunk";
+    if (text.startsWith("CON")) return "Conjunta";
+    return "Entel";
+  };
+
   Object.entries(dependencies).forEach(([task, deps]) => {
-    const taskScope = task.startsWith("INT") ? "Intellicore" : task.startsWith("SPL") ? "Splunk" : task.startsWith("CON") ? "Conjunta" : "Entel";
+    const taskScope = inferDependencyScope(task);
     
     deps.forEach((depTask) => {
-      const depScope = depTask.startsWith("INT") ? "Intellicore" : depTask.startsWith("SPL") ? "Splunk" : depTask.startsWith("CON") ? "Conjunta" : "Entel";
+      const depScope = inferDependencyScope(depTask);
       
       if (taskScope !== depScope) {
         const key = `${taskScope} depende de ${depScope}`;
@@ -1364,7 +1579,8 @@ function startLivePulse() {
 function sanitizeIncomingRoadmap(rawRoadmap) {
   if (!Array.isArray(rawRoadmap)) return null;
 
-  return rawRoadmap
+  return regroupRoadmapByScope(
+    rawRoadmap
     .map((lane, index) => {
       const laneName = lane?.lane || `LANE-${index + 1}`;
       const laneKey = String(lane?.key || laneName).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-");
@@ -1389,7 +1605,8 @@ function sanitizeIncomingRoadmap(rawRoadmap) {
         })),
       };
     })
-    .filter((lane) => lane.tasks.length > 0);
+    .filter((lane) => lane.tasks.length > 0)
+  );
 }
 
 async function syncFromPlannerApi() {
