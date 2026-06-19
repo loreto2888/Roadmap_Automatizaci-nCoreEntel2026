@@ -528,6 +528,7 @@ let notificationsInitialized = false;
 let plannerSyncHealthy = false;
 let plannerSyncInFlight = false;
 let plannerSyncNotified = false;
+let plannerSyncLastMessage = "";
 let plannerSignature = "";
 
 function getAllTasks() {
@@ -1396,9 +1397,25 @@ async function syncFromPlannerApi() {
   plannerSyncInFlight = true;
 
   try {
-    const response = await fetch(`/api/planner/roadmap?t=${Date.now()}`, { cache: "no-store" });
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), 10000);
+    const response = await fetch(`/api/planner/roadmap?t=${Date.now()}`, {
+      cache: "no-store",
+      signal: controller.signal,
+    });
+    window.clearTimeout(timeoutId);
+
     if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
+      let message = `HTTP ${response.status}`;
+
+      try {
+        const failure = await response.json();
+        message = failure?.message || failure?.error || message;
+      } catch {
+        // Keep the HTTP status text when the error body is not JSON.
+      }
+
+      throw new Error(message);
     }
 
     const payload = await response.json();
@@ -1424,14 +1441,36 @@ async function syncFromPlannerApi() {
       updateDependencies(payload.dependencies);
     }
 
+    if (payload.syncWarning && payload.syncWarning !== plannerSyncLastMessage) {
+      pushToast({ id: "PLANNER", priority: "Important", title: "Planner pendiente de autenticacion", owner: "Revisa la consola del servidor" }, "important");
+      plannerSyncLastMessage = payload.syncWarning;
+    }
+
     plannerSyncHealthy = true;
+    if (!payload.syncWarning) {
+      plannerSyncLastMessage = "";
+    }
     if (!plannerSyncNotified) {
       pushToast({ id: "PLANNER", priority: "Important", title: "Sincronizacion con Planner activa", owner: "Sistema" }, "important");
       plannerSyncNotified = true;
     }
   } catch (error) {
-    if (plannerSyncHealthy) {
-      pushToast({ id: "PLANNER", priority: "Urgent", title: "Sincronizacion con Planner interrumpida", owner: "Sistema" }, "urgent");
+    const message = error?.name === "AbortError"
+      ? "Planner no respondio dentro del tiempo esperado"
+      : error?.message || "Sincronizacion con Planner interrumpida";
+
+    if (message !== plannerSyncLastMessage) {
+      const needsAuth = message.toLowerCase().includes("autenticacion");
+      pushToast(
+        {
+          id: "PLANNER",
+          priority: needsAuth ? "Important" : "Urgent",
+          title: needsAuth ? "Planner pendiente de autenticacion" : "Sincronizacion con Planner interrumpida",
+          owner: needsAuth ? "Revisa la consola del servidor" : "Sistema",
+        },
+        needsAuth ? "important" : "urgent"
+      );
+      plannerSyncLastMessage = message;
     }
     plannerSyncHealthy = false;
     console.warn("Planner sync error:", error);

@@ -6,6 +6,7 @@ const { Client } = require("@microsoft/microsoft-graph-client");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const PLANNER_SYNC_TIMEOUT_MS = Number(process.env.PLANNER_SYNC_TIMEOUT_MS || 8000);
 
 function readDotEnvPlanner() {
   const envPath = path.join(process.cwd(), ".env.planner");
@@ -221,6 +222,39 @@ async function buildRoadmapFromPlanner() {
   return { lanes, dependencies };
 }
 
+function withTimeout(promise, timeoutMs, createError) {
+  let timeoutId;
+
+  const timeoutPromise = new Promise((_, reject) => {
+    timeoutId = setTimeout(() => reject(createError()), timeoutMs);
+  });
+
+  return Promise.race([promise, timeoutPromise]).finally(() => clearTimeout(timeoutId));
+}
+
+let refreshPromise = null;
+
+async function refreshRoadmapCache() {
+  if (!refreshPromise) {
+    refreshPromise = buildRoadmapFromPlanner()
+      .then(({ lanes, dependencies }) => {
+        const fetchedAt = Date.now();
+        cache = {
+          fetchedAt,
+          roadmap: lanes,
+          dependencies,
+        };
+
+        return { lanes, dependencies, fetchedAt };
+      })
+      .finally(() => {
+        refreshPromise = null;
+      });
+  }
+
+  return refreshPromise;
+}
+
 let cache = {
   fetchedAt: 0,
   roadmap: null,
@@ -235,17 +269,33 @@ app.get("/api/planner/roadmap", async (_req, res) => {
       return;
     }
 
-    const { lanes, dependencies } = await buildRoadmapFromPlanner();
-    cache = {
-      fetchedAt: now,
-      roadmap: lanes,
-      dependencies,
-    };
+    const { lanes, dependencies, fetchedAt } = await withTimeout(
+      refreshRoadmapCache(),
+      PLANNER_SYNC_TIMEOUT_MS,
+      () => {
+        const error = new Error("Planner requiere autenticacion en Microsoft Graph. Revisa la consola del servidor y completa el codigo de dispositivo.");
+        error.code = "planner_auth_required";
+        error.status = 503;
+        return error;
+      }
+    );
 
-    res.json({ roadmap: lanes, dependencies, fetchedAt: new Date(now).toISOString(), cached: false });
+    res.json({ roadmap: lanes, dependencies, fetchedAt: new Date(fetchedAt).toISOString(), cached: false });
   } catch (error) {
-    res.status(500).json({
-      error: "planner_sync_failed",
+    if (error.code === "planner_auth_required" && cache.roadmap) {
+      res.json({
+        roadmap: cache.roadmap,
+        dependencies: cache.dependencies,
+        fetchedAt: new Date(cache.fetchedAt).toISOString(),
+        cached: true,
+        stale: true,
+        syncWarning: error.message,
+      });
+      return;
+    }
+
+    res.status(error.status || 500).json({
+      error: error.code || "planner_sync_failed",
       message: error.message,
     });
   }
