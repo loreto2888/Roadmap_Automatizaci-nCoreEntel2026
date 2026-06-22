@@ -286,12 +286,16 @@ function setupScrollSync() {
   const leftPanel = document.getElementById("ganttRowsLeft");
   const rightPanel = document.getElementById("ganttRowsContainer");
   const timelineHeader = document.getElementById("ganttTimelineHeader");
+  const svg = document.getElementById("ganttDependencies");
 
   if (!leftPanel || !rightPanel || !timelineHeader) return;
 
   rightPanel.addEventListener("scroll", () => {
     leftPanel.scrollTop = rightPanel.scrollTop;
     timelineHeader.scrollLeft = rightPanel.scrollLeft;
+    if (svg) {
+      svg.style.transform = `translate(${-rightPanel.scrollLeft}px, ${-rightPanel.scrollTop}px)`;
+    }
   });
 
   leftPanel.addEventListener("scroll", () => {
@@ -314,12 +318,14 @@ function setupZoomControls(payload) {
     zoomLevel = Math.min(MAX_ZOOM, zoomLevel + 0.2);
     renderTimelineHeader(payload);
     renderGanttRows(payload);
+    renderDependencies(payload);
   });
 
   zoomOutBtn.addEventListener("click", () => {
     zoomLevel = Math.max(MIN_ZOOM, zoomLevel - 0.2);
     renderTimelineHeader(payload);
     renderGanttRows(payload);
+    renderDependencies(payload);
   });
 }
 
@@ -373,6 +379,141 @@ function setUpdatedDate() {
   target.textContent = `Actualizado: ${asDate.toLocaleString("es-CL", { hour12: false })}`;
 }
 
+// ============= Calendar Functionality =============
+let calendarMonth = new Date();
+
+function renderCalendar() {
+  const calendarDiv = document.getElementById("ganttCalendar");
+  if (!calendarDiv) return;
+
+  const year = calendarMonth.getFullYear();
+  const month = calendarMonth.getMonth();
+  
+  const monthName = calendarMonth.toLocaleDateString("es-CL", { month: "long", year: "numeric" }).replace(/^\w/, (c) => c.toUpperCase());
+  
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+  const startDate = new Date(firstDay);
+  startDate.setDate(startDate.getDate() - firstDay.getDay());
+
+  let html = `
+    <div class="calendar-month-year">${monthName}</div>
+    <div class="calendar-weekdays">
+      <div class="calendar-weekday">Do</div>
+      <div class="calendar-weekday">Lu</div>
+      <div class="calendar-weekday">Ma</div>
+      <div class="calendar-weekday">Mi</div>
+      <div class="calendar-weekday">Ju</div>
+      <div class="calendar-weekday">Vi</div>
+      <div class="calendar-weekday">Sa</div>
+    </div>
+    <div class="calendar-days">
+  `;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  for (let i = 0; i < 42; i++) {
+    const currentDate = new Date(startDate);
+    currentDate.setDate(startDate.getDate() + i);
+    const isCurrentMonth = currentDate.getMonth() === month;
+    const isToday = currentDate.getTime() === today.getTime();
+    const dateNum = currentDate.getDate();
+
+    const classes = ["calendar-day"];
+    if (!isCurrentMonth) classes.push("disabled");
+    if (isToday) classes.push("today");
+
+    const dateStr = currentDate.toISOString().split("T")[0];
+    html += `<div class="calendar-day ${classes.join(" ")}" data-date="${dateStr}" onclick="handleCalendarClick('${dateStr}')">${dateNum}</div>`;
+  }
+
+  html += `</div>`;
+  calendarDiv.innerHTML = html;
+}
+
+function handleCalendarClick(dateStr) {
+  const selectedDays = document.querySelectorAll(".calendar-day.selected");
+  selectedDays.forEach((d) => d.classList.remove("selected"));
+  
+  const clicked = document.querySelector(`[data-date="${dateStr}"]`);
+  if (clicked && !clicked.classList.contains("disabled")) {
+    clicked.classList.add("selected");
+  }
+}
+
+// ============= Render Dependencies =============
+function renderDependencies(payload) {
+  const svg = document.getElementById("ganttDependencies");
+  if (!svg || payload.tasks.length < 2) return;
+
+  svg.innerHTML = '<defs><marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><polygon points="0 0, 10 3, 0 6" fill="rgba(103, 169, 223, 0.6)" /></marker></defs>';
+
+  const container = document.getElementById("ganttRowsContainer");
+  if (!container) return;
+
+  const colWidthPx = getColWidthPx();
+  const colWidthDays = getColWidthDays();
+
+  // Create dependencies based on task indices
+  for (let idx = 1; idx < payload.tasks.length; idx++) {
+    const prevTask = payload.tasks[idx - 1];
+    const currTask = payload.tasks[idx];
+    
+    // Get bar positions
+    const prevEndOffset = daysBetween(payload.minDate, prevTask.endDate) - 1;
+    const prevX = (prevEndOffset / (colWidthDays || 1)) * colWidthPx + 80;
+
+    const currStartOffset = daysBetween(payload.minDate, currTask.startDate) - 1;
+    const currX = (currStartOffset / (colWidthDays || 1)) * colWidthPx;
+
+    const rowHeight = 50;
+    const prevY = idx * rowHeight + 25;
+    const currY = (idx + 1) * rowHeight + 25;
+
+    // Create Bezier curve for dependency
+    const midX = (prevX + currX) / 2;
+    const path = `M ${prevX} ${prevY} C ${midX} ${prevY}, ${midX} ${currY}, ${currX} ${currY}`;
+
+    const line = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    line.setAttribute("d", path);
+    line.setAttribute("class", "dependency-line");
+    svg.appendChild(line);
+  }
+
+  // Resize SVG to fit content
+  svg.setAttribute("width", container.scrollWidth);
+  svg.setAttribute("height", container.scrollHeight);
+}
+
+// ============= Setup Calendar Controls =============
+function setupCalendarControls() {
+  const prevBtn = document.getElementById("calendarPrevMonth");
+  const nextBtn = document.getElementById("calendarNextMonth");
+  const todayBtn = document.getElementById("calendarToday");
+
+  if (prevBtn) {
+    prevBtn.addEventListener("click", () => {
+      calendarMonth.setMonth(calendarMonth.getMonth() - 1);
+      renderCalendar();
+    });
+  }
+
+  if (nextBtn) {
+    nextBtn.addEventListener("click", () => {
+      calendarMonth.setMonth(calendarMonth.getMonth() + 1);
+      renderCalendar();
+    });
+  }
+
+  if (todayBtn) {
+    todayBtn.addEventListener("click", () => {
+      calendarMonth = new Date();
+      renderCalendar();
+    });
+  }
+}
+
 // ============= Initialize =============
 const tasks = parseRoadmapData();
 const payload = withSchedule(tasks);
@@ -386,8 +527,11 @@ if (!payload.maxDate) {
 renderLeftPanel(payload);
 renderTimelineHeader(payload);
 renderGanttRows(payload);
+renderDependencies(payload);
 setupScrollSync();
 setupZoomControls(payload);
+setupCalendarControls();
+renderCalendar();
 hookDownload(payload);
 setUpdatedDate();
 updateCurrentDateAndCounter(payload);

@@ -55,7 +55,16 @@
         </div>
 
         <div class="gantt-viewport">
+          <div class="calendar-toolbar">
+            <button id="calendarPrevMonth" class="btn ghost icon-btn" title="Mes anterior">←</button>
+            <div class="calendar-wrapper">
+              <div id="ganttCalendar" class="gantt-calendar"></div>
+            </div>
+            <button id="calendarNextMonth" class="btn ghost icon-btn" title="Mes siguiente">→</button>
+            <button id="calendarToday" class="btn ghost" title="Hoy">Hoy</button>
+          </div>
           <div class="gantt-timeline-header" id="ganttTimelineHeader"></div>
+          <svg id="ganttDependencies" class="gantt-dependencies"></svg>
           <div class="gantt-rows-container" id="ganttRowsContainer"></div>
         </div>
       </div>

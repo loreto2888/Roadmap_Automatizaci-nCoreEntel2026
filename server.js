@@ -7,6 +7,8 @@ const { Client } = require("@microsoft/microsoft-graph-client");
 const app = express();
 const PORT = process.env.PORT || 3000;
 const PLANNER_SYNC_TIMEOUT_MS = Number(process.env.PLANNER_SYNC_TIMEOUT_MS || 8000);
+const PLANNER_AUTH_COOLDOWN_MS = Number(process.env.PLANNER_AUTH_COOLDOWN_MS || 300000);
+const PLANNER_PROMPT_LOG_THROTTLE_MS = Number(process.env.PLANNER_PROMPT_LOG_THROTTLE_MS || 30000);
 
 function readDotEnvPlanner() {
   const envPath = path.join(process.cwd(), ".env.planner");
@@ -31,10 +33,19 @@ const envPlanner = readDotEnvPlanner();
 const TENANT_ID = process.env.PLANNER_TENANT_ID || envPlanner.PLANNER_TENANT_ID || "5bf66ace-03e6-4678-bb05-bd55ec310f0c";
 const PLAN_ID = process.env.PLANNER_PLAN_ID || envPlanner.PLANNER_PLAN_ID || "4bj84BvXxU2W_YtJAIu6z2UAHPNx";
 
+let plannerAuthBlockedUntil = 0;
+let plannerPromptLoggedAt = 0;
+
 const credential = new DeviceCodeCredential({
   tenantId: TENANT_ID,
   clientId: "04b07795-8ddb-461a-bbee-02f9e1bf7b46",
   userPromptCallback: (info) => {
+    const now = Date.now();
+    if (now - plannerPromptLoggedAt < PLANNER_PROMPT_LOG_THROTTLE_MS) {
+      return;
+    }
+
+    plannerPromptLoggedAt = now;
     console.log("\nAutenticacion requerida en Microsoft Graph:");
     console.log(info.message);
   },
@@ -268,6 +279,7 @@ async function refreshRoadmapCache() {
   if (!refreshPromise) {
     refreshPromise = buildRoadmapFromPlanner()
       .then(({ lanes, dependencies }) => {
+        plannerAuthBlockedUntil = 0;
         const fetchedAt = Date.now();
         cache = {
           fetchedAt,
@@ -294,6 +306,30 @@ let cache = {
 app.get("/api/planner/roadmap", async (_req, res) => {
   try {
     const now = Date.now();
+
+    if (plannerAuthBlockedUntil > now) {
+      const secondsLeft = Math.ceil((plannerAuthBlockedUntil - now) / 1000);
+      const message = `Planner requiere autenticacion en Microsoft Graph. Reintenta en ${secondsLeft}s o completa el codigo de dispositivo en la consola.`;
+
+      if (cache.roadmap) {
+        res.json({
+          roadmap: cache.roadmap,
+          dependencies: cache.dependencies,
+          fetchedAt: new Date(cache.fetchedAt).toISOString(),
+          cached: true,
+          stale: true,
+          syncWarning: message,
+        });
+        return;
+      }
+
+      res.status(503).json({
+        error: "planner_auth_required",
+        message,
+      });
+      return;
+    }
+
     if (cache.roadmap && now - cache.fetchedAt < 15000) {
       res.json({ roadmap: cache.roadmap, dependencies: cache.dependencies, fetchedAt: new Date(cache.fetchedAt).toISOString(), cached: true });
       return;
@@ -303,6 +339,7 @@ app.get("/api/planner/roadmap", async (_req, res) => {
       refreshRoadmapCache(),
       PLANNER_SYNC_TIMEOUT_MS,
       () => {
+        plannerAuthBlockedUntil = Date.now() + PLANNER_AUTH_COOLDOWN_MS;
         const error = new Error("Planner requiere autenticacion en Microsoft Graph. Revisa la consola del servidor y completa el codigo de dispositivo.");
         error.code = "planner_auth_required";
         error.status = 503;
