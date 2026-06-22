@@ -366,38 +366,273 @@ function setupZoomControls(payload) {
   });
 }
 
-// ============= CSV Export =============
-function buildCsv(payload) {
-  const headers = ["ID", "Tarea", "Scope", "Inicio", "Fin", "DuracionDias", "Estado", "% Completado"];
-  const lines = payload.tasks.map((task) => [
-    task.id,
-    task.title,
-    task.scope,
-    formatDate(task.startDate),
-    formatDate(task.endDate),
-    task.duration,
-    task.status,
-    task.completed ? "100%" : "0%",
-  ]);
+// ============= Excel Export =============
+function startOfMonday(date) {
+  const result = new Date(date);
+  result.setHours(0, 0, 0, 0);
+  const offset = (result.getDay() + 6) % 7;
+  result.setDate(result.getDate() - offset);
+  return result;
+}
 
-  return [headers, ...lines]
-    .map((row) => row.map((cell) => `"${String(cell ?? "").replaceAll('"', '""')}"`).join(","))
-    .join("\n");
+function addLocalDays(date, days) {
+  const result = new Date(date);
+  result.setDate(result.getDate() + days);
+  return result;
+}
+
+function getWeekPeriods(minDate, maxDate) {
+  const weeks = [];
+  let cursor = startOfMonday(minDate);
+  const limit = new Date(maxDate);
+  limit.setHours(0, 0, 0, 0);
+
+  while (cursor <= limit) {
+    const weekEnd = addLocalDays(cursor, 4);
+    const monthLabel = cursor.toLocaleDateString("es-CL", { month: "short" });
+    weeks.push({
+      start: new Date(cursor),
+      end: new Date(weekEnd),
+      label: `${cursor.getDate()}-${weekEnd.getDate()} ${monthLabel}`,
+      daysLabel: "L M M J V",
+    });
+    cursor = addLocalDays(cursor, 7);
+  }
+
+  return weeks;
+}
+
+function hexToArgb(hex) {
+  return `FF${hex.replace("#", "").toUpperCase()}`;
+}
+
+function getScopeColor(scopeKey) {
+  const palette = {
+    entel: "67A9DF",
+    intellicore: "E4580D",
+    gestion: "D96FD3",
+    splunk: "9DC77B",
+    conjunta: "CCB96A",
+  };
+
+  return hexToArgb(`#${palette[scopeKey] || palette.entel}`);
+}
+
+function applyCellBorder(cell) {
+  cell.border = {
+    top: { style: "thin", color: { argb: "FF2E3A55" } },
+    left: { style: "thin", color: { argb: "FF2E3A55" } },
+    bottom: { style: "thin", color: { argb: "FF2E3A55" } },
+    right: { style: "thin", color: { argb: "FF2E3A55" } },
+  };
+}
+
+function styleHeaderCell(cell, fillColor, fontColor = "FFFFFFFF") {
+  cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: fillColor } };
+  cell.font = { color: { argb: fontColor }, bold: true, name: "Manrope" };
+  cell.alignment = { vertical: "middle", horizontal: "center", wrapText: true };
+  applyCellBorder(cell);
+}
+
+async function buildExcelWorkbook(payload) {
+  const ExcelJS = window.ExcelJS;
+  if (!ExcelJS) {
+    throw new Error("ExcelJS no está disponible");
+  }
+
+  const workbook = new ExcelJS.Workbook();
+  workbook.creator = "Automatizacion Core";
+  workbook.created = new Date();
+  workbook.modified = new Date();
+
+  const weeks = getWeekPeriods(payload.minDate, payload.maxDate);
+  const totalColumns = 7 + weeks.length;
+  const darkFill = "FF111D35";
+  const darkFillAlt = "FF0E182B";
+  const lineColor = "FF2E3A55";
+  const titleFill = "FF0B1529";
+
+  const summary = workbook.addWorksheet("Resumen", {
+    views: [{ state: "frozen", ySplit: 3 }],
+  });
+
+  summary.columns = [
+    { width: 16 },
+    { width: 42 },
+    { width: 16 },
+    { width: 16 },
+    { width: 18 },
+    { width: 12 },
+    { width: 14 },
+    { width: 14 },
+  ];
+
+  summary.mergeCells(1, 1, 1, 8);
+  summary.getCell(1, 1).value = "Automatizacion Core - Resumen de tareas";
+  summary.getCell(1, 1).fill = { type: "pattern", pattern: "solid", fgColor: { argb: titleFill } };
+  summary.getCell(1, 1).font = { color: { argb: "FFFFFFFF" }, bold: true, size: 14, name: "Space Grotesk" };
+  summary.getCell(1, 1).alignment = { vertical: "middle", horizontal: "left" };
+
+  summary.mergeCells(2, 1, 2, 8);
+  summary.getCell(2, 1).value = `Exportado: ${new Date().toLocaleString("es-CL", { hour12: false })}`;
+  summary.getCell(2, 1).fill = { type: "pattern", pattern: "solid", fgColor: { argb: darkFillAlt } };
+  summary.getCell(2, 1).font = { color: { argb: "FF9DB0D1" }, italic: true, name: "Manrope" };
+
+  const summaryHeaders = ["ID", "Tarea", "Scope", "Inicio", "Fin", "Duración", "Estado", "% Completado"];
+  summary.addRow(summaryHeaders);
+  const summaryHeaderRow = summary.getRow(3);
+  summaryHeaderRow.height = 22;
+  summaryHeaderRow.eachCell((cell) => {
+    styleHeaderCell(cell, "FF1A2742");
+  });
+
+  payload.tasks.forEach((task) => {
+    const row = summary.addRow([
+      task.id,
+      task.title,
+      task.scope,
+      formatDate(task.startDate),
+      formatDate(task.endDate),
+      task.duration,
+      task.status,
+      task.completed ? "100%" : "0%",
+    ]);
+    row.height = 20;
+    row.eachCell((cell, colNumber) => {
+      cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: colNumber % 2 === 0 ? darkFillAlt : darkFill } };
+      cell.font = { color: { argb: "FFECF2FF" }, name: "Manrope" };
+      cell.alignment = { vertical: "middle", horizontal: colNumber === 2 ? "left" : "center", wrapText: true };
+      applyCellBorder(cell);
+    });
+  });
+
+  summary.autoFilter = { from: "A3", to: "H3" };
+
+  const gantt = workbook.addWorksheet("Gantt", {
+    views: [{ state: "frozen", ySplit: 4, xSplit: 7 }],
+  });
+
+  gantt.columns = [
+    { width: 16 },
+    { width: 40 },
+    { width: 14 },
+    { width: 14 },
+    { width: 12 },
+    { width: 10 },
+    { width: 12 },
+    ...weeks.map(() => ({ width: 16 })),
+  ];
+
+  gantt.mergeCells(1, 1, 1, totalColumns);
+  gantt.getCell(1, 1).value = "Carta Gantt del Roadmap";
+  gantt.getCell(1, 1).fill = { type: "pattern", pattern: "solid", fgColor: { argb: titleFill } };
+  gantt.getCell(1, 1).font = { color: { argb: "FFFFFFFF" }, bold: true, size: 16, name: "Space Grotesk" };
+  gantt.getCell(1, 1).alignment = { vertical: "middle", horizontal: "left" };
+
+  gantt.mergeCells(2, 1, 2, totalColumns);
+  gantt.getCell(2, 1).value = "Vista semanal tipo dashboard con barras por scope";
+  gantt.getCell(2, 1).fill = { type: "pattern", pattern: "solid", fgColor: { argb: darkFillAlt } };
+  gantt.getCell(2, 1).font = { color: { argb: "FF9DB0D1" }, italic: true, name: "Manrope" };
+  gantt.getCell(2, 1).alignment = { vertical: "middle", horizontal: "left" };
+
+  const ganttHeaders = ["TAREA", "%", "INICIO", "FIN", "DEP.", "CAL", "ESTADO"];
+  ganttHeaders.forEach((label, index) => {
+    const cell = gantt.getCell(4, index + 1);
+    cell.value = label;
+    styleHeaderCell(cell, "FF1A2742");
+  });
+
+  weeks.forEach((week, index) => {
+    const cell = gantt.getCell(4, 8 + index);
+    cell.value = `${week.label}\n${week.daysLabel}`;
+    styleHeaderCell(cell, "FF1A2742");
+  });
+  gantt.getRow(4).height = 34;
+
+  payload.tasks.forEach((task, idx) => {
+    const rowNumber = 5 + idx;
+    const row = gantt.getRow(rowNumber);
+    row.height = 24;
+
+    const metadataValues = [
+      `${task.id}\n${task.title}`,
+      task.completed ? "100%" : "0%",
+      formatDate(task.startDate),
+      formatDate(task.endDate),
+      idx > 0 ? payload.tasks[idx - 1].id : "-",
+      task.startDate.getDate(),
+      task.status === "Cerrada" ? "✓" : "○",
+    ];
+
+    metadataValues.forEach((value, columnIndex) => {
+      const cell = gantt.getCell(rowNumber, columnIndex + 1);
+      cell.value = value;
+      cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: columnIndex % 2 === 0 ? darkFillAlt : darkFill } };
+      cell.font = { color: { argb: "FFECF2FF" }, name: "Manrope", bold: columnIndex === 0 };
+      cell.alignment = { vertical: "middle", horizontal: columnIndex === 0 ? "left" : "center", wrapText: true };
+      applyCellBorder(cell);
+    });
+
+    weeks.forEach((week, weekIndex) => {
+      const cell = gantt.getCell(rowNumber, 8 + weekIndex);
+      cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: darkFill } };
+      cell.border = {
+        top: { style: "thin", color: { argb: lineColor } },
+        left: { style: "thin", color: { argb: lineColor } },
+        bottom: { style: "thin", color: { argb: lineColor } },
+        right: { style: "thin", color: { argb: lineColor } },
+      };
+    });
+
+    const overlaps = weeks
+      .map((week, weekIndex) => ({ week, weekIndex }))
+      .filter(({ week }) => task.startDate <= week.end && task.endDate >= week.start);
+
+    if (overlaps.length > 0) {
+      const first = overlaps[0].weekIndex + 8;
+      const last = overlaps[overlaps.length - 1].weekIndex + 8;
+      if (first === last) {
+        gantt.getCell(rowNumber, first).value = `${task.id} ${task.title}`;
+        gantt.getCell(rowNumber, first).fill = { type: "pattern", pattern: "solid", fgColor: { argb: getScopeColor(task.scopeKey) } };
+        gantt.getCell(rowNumber, first).font = { color: { argb: "FFFFFFFF" }, bold: true, name: "Manrope" };
+        gantt.getCell(rowNumber, first).alignment = { vertical: "middle", horizontal: "center", wrapText: true };
+        applyCellBorder(gantt.getCell(rowNumber, first));
+      } else {
+        gantt.mergeCells(rowNumber, first, rowNumber, last);
+        const barCell = gantt.getCell(rowNumber, first);
+        barCell.value = `${task.id} ${task.title}`;
+        barCell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: getScopeColor(task.scopeKey) } };
+        barCell.font = { color: { argb: "FFFFFFFF" }, bold: true, name: "Manrope" };
+        barCell.alignment = { vertical: "middle", horizontal: "center", wrapText: true };
+        applyCellBorder(barCell);
+      }
+    }
+  });
+
+  gantt.autoFilter = { from: "A4", to: `${String.fromCharCode(64 + Math.min(totalColumns, 26))}4` };
+
+  return workbook;
 }
 
 function hookDownload(payload) {
   const button = document.getElementById("downloadCsv");
   if (!button) return;
 
-  button.addEventListener("click", () => {
-    const csv = buildCsv(payload);
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "carta-gantt-roadmap-core.csv";
-    link.click();
-    URL.revokeObjectURL(url);
+  button.addEventListener("click", async () => {
+    try {
+      const workbook = await buildExcelWorkbook(payload);
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "carta-gantt-roadmap-core.xlsx";
+      link.click();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error(error);
+      alert("No se pudo generar el Excel. Revisa la conexión o intenta de nuevo.");
+    }
   });
 }
 

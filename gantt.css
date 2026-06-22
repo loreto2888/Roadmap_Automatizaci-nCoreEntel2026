@@ -334,7 +334,7 @@ h1 {
 }
 
 .calendar-top-strip {
-  margin: 6px 0 12px;
+  margin: 4px 0 10px;
   padding: 0 18px;
   flex: none;
   flex-direction: row;
@@ -355,9 +355,9 @@ h1 {
   background: rgba(17, 29, 53, 0.95);
   border: 1px solid rgba(103, 169, 223, 0.5);
   border-radius: 12px;
-  padding: 18px;
+  padding: 14px;
   color: var(--text);
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   min-width: auto;
   width: 100%;
   max-width: 100%;
@@ -406,7 +406,7 @@ h1 {
   font-weight: 700;
   margin-bottom: 6px;
   color: #8ac8ff;
-  font-size: 0.68rem;
+  font-size: 0.64rem;
 }
 
 .calendar-weekdays {
@@ -429,15 +429,15 @@ h1 {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 1px;
-  margin-bottom: 4px;
+  margin-bottom: 3px;
   text-align: center;
 }
 
 .calendar-weekday-inline {
   font-weight: 600;
   color: var(--muted);
-  font-size: 0.56rem;
-  width: 18px;
+  font-size: 0.52rem;
+  width: 16px;
   text-align: center;
 }
 
@@ -470,13 +470,13 @@ h1 {
 }
 
 .calendar-day-inline {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 3px;
-  font-size: 0.54rem;
+  font-size: 0.5rem;
   cursor: pointer;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid transparent;
