@@ -755,7 +755,16 @@ function setUpdatedDate() {
 }
 
 // ============= Calendar Functionality =============
-let calendarMonth = new Date(2026, 3, 1); // Empezar en Abril 2026
+function getClampedCalendarMonth(referenceDate = new Date()) {
+  const monthDate = new Date(referenceDate);
+  monthDate.setHours(0, 0, 0, 0);
+
+  if (monthDate.getMonth() < 3) monthDate.setMonth(3, 1);
+  if (monthDate.getMonth() > 11) monthDate.setMonth(11, 1);
+  return monthDate;
+}
+
+let calendarMonth = getClampedCalendarMonth();
 
 function renderCalendar() {
   const container = document.getElementById("ganttCalendarContainer");
@@ -894,6 +903,17 @@ function setupCalendarControls() {
   }
 }
 
+function syncCalendarToCurrentMonth() {
+  const currentMonth = getClampedCalendarMonth();
+  if (
+    currentMonth.getFullYear() !== calendarMonth.getFullYear() ||
+    currentMonth.getMonth() !== calendarMonth.getMonth()
+  ) {
+    calendarMonth = currentMonth;
+    renderCalendar();
+  }
+}
+
 // ============= Initialize =============
 const tasks = parseRoadmapData();
 const payload = withSchedule(tasks);
@@ -916,3 +936,4 @@ hookDownload(payload);
 setUpdatedDate();
 updateCurrentDateAndCounter(payload);
 window.setInterval(() => updateCurrentDateAndCounter(payload), 1000);
+window.setInterval(syncCalendarToCurrentMonth, 60000);
