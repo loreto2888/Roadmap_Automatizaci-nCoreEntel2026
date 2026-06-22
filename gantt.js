@@ -452,6 +452,109 @@ async function buildExcelWorkbook(payload) {
   const lineColor = "FF2E3A55";
   const titleFill = "FF0B1529";
 
+  const roadmap = workbook.addWorksheet("Roadmap", {
+    views: [{ state: "frozen", ySplit: 4, xSplit: 7 }],
+  });
+
+  roadmap.columns = [
+    { width: 16 },
+    { width: 40 },
+    { width: 14 },
+    { width: 14 },
+    { width: 12 },
+    { width: 10 },
+    { width: 12 },
+    ...weeks.map(() => ({ width: 16 })),
+  ];
+
+  roadmap.mergeCells(1, 1, 1, totalColumns);
+  roadmap.getCell(1, 1).value = "Automatizacion Core - Roadmap";
+  roadmap.getCell(1, 1).fill = { type: "pattern", pattern: "solid", fgColor: { argb: titleFill } };
+  roadmap.getCell(1, 1).font = { color: { argb: "FFFFFFFF" }, bold: true, size: 16, name: "Space Grotesk" };
+  roadmap.getCell(1, 1).alignment = { vertical: "middle", horizontal: "left" };
+
+  roadmap.mergeCells(2, 1, 2, totalColumns);
+  roadmap.getCell(2, 1).value = "Vista de trabajo con columnas separadas y barras semanales";
+  roadmap.getCell(2, 1).fill = { type: "pattern", pattern: "solid", fgColor: { argb: darkFillAlt } };
+  roadmap.getCell(2, 1).font = { color: { argb: "FF9DB0D1" }, italic: true, name: "Manrope" };
+  roadmap.getCell(2, 1).alignment = { vertical: "middle", horizontal: "left" };
+
+  const roadmapHeaders = ["TAREA", "%", "INICIO", "FIN", "DEP.", "CAL", "ESTADO"];
+  roadmapHeaders.forEach((label, index) => {
+    const cell = roadmap.getCell(4, index + 1);
+    cell.value = label;
+    styleHeaderCell(cell, "FF1A2742");
+  });
+
+  weeks.forEach((week, index) => {
+    const cell = roadmap.getCell(4, 8 + index);
+    cell.value = `${week.label}\n${week.daysLabel}`;
+    styleHeaderCell(cell, "FF1A2742");
+  });
+  roadmap.getRow(4).height = 34;
+
+  payload.tasks.forEach((task, idx) => {
+    const rowNumber = 5 + idx;
+    const row = roadmap.getRow(rowNumber);
+    row.height = 24;
+
+    const metadataValues = [
+      `${task.id}\n${task.title}`,
+      task.completed ? "100%" : "0%",
+      formatDate(task.startDate),
+      formatDate(task.endDate),
+      idx > 0 ? payload.tasks[idx - 1].id : "-",
+      task.startDate.getDate(),
+      task.status === "Cerrada" ? "✓" : "○",
+    ];
+
+    metadataValues.forEach((value, columnIndex) => {
+      const cell = roadmap.getCell(rowNumber, columnIndex + 1);
+      cell.value = value;
+      cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: columnIndex % 2 === 0 ? darkFillAlt : darkFill } };
+      cell.font = { color: { argb: "FFECF2FF" }, name: "Manrope", bold: columnIndex === 0 };
+      cell.alignment = { vertical: "middle", horizontal: columnIndex === 0 ? "left" : "center", wrapText: true };
+      applyCellBorder(cell);
+    });
+
+    weeks.forEach((week, weekIndex) => {
+      const cell = roadmap.getCell(rowNumber, 8 + weekIndex);
+      cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: darkFill } };
+      cell.border = {
+        top: { style: "thin", color: { argb: lineColor } },
+        left: { style: "thin", color: { argb: lineColor } },
+        bottom: { style: "thin", color: { argb: lineColor } },
+        right: { style: "thin", color: { argb: lineColor } },
+      };
+    });
+
+    const overlaps = weeks
+      .map((week, weekIndex) => ({ week, weekIndex }))
+      .filter(({ week }) => task.startDate <= week.end && task.endDate >= week.start);
+
+    if (overlaps.length > 0) {
+      const first = overlaps[0].weekIndex + 8;
+      const last = overlaps[overlaps.length - 1].weekIndex + 8;
+      if (first === last) {
+        roadmap.getCell(rowNumber, first).value = `${task.id} ${task.title}`;
+        roadmap.getCell(rowNumber, first).fill = { type: "pattern", pattern: "solid", fgColor: { argb: getScopeColor(task.scopeKey) } };
+        roadmap.getCell(rowNumber, first).font = { color: { argb: "FFFFFFFF" }, bold: true, name: "Manrope" };
+        roadmap.getCell(rowNumber, first).alignment = { vertical: "middle", horizontal: "center", wrapText: true };
+        applyCellBorder(roadmap.getCell(rowNumber, first));
+      } else {
+        roadmap.mergeCells(rowNumber, first, rowNumber, last);
+        const barCell = roadmap.getCell(rowNumber, first);
+        barCell.value = `${task.id} ${task.title}`;
+        barCell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: getScopeColor(task.scopeKey) } };
+        barCell.font = { color: { argb: "FFFFFFFF" }, bold: true, name: "Manrope" };
+        barCell.alignment = { vertical: "middle", horizontal: "center", wrapText: true };
+        applyCellBorder(barCell);
+      }
+    }
+  });
+
+  roadmap.autoFilter = { from: "A4", to: `${String.fromCharCode(64 + Math.min(totalColumns, 26))}4` };
+
   const summary = workbook.addWorksheet("Resumen", {
     views: [{ state: "frozen", ySplit: 3 }],
   });
