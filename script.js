@@ -1188,11 +1188,11 @@ function updateStats() {
   const percent = Math.round((closed / total) * 100);
   const globalRemaining = allTasks.filter((task) => !task.completed).length;
 
-  overallPercent.textContent = `${percent}%`;
-  closedCount.textContent = `${closed}/${visible.length}`;
-  remainingCount.textContent = `${globalRemaining}`;
-  timelineLabel.textContent = `${percent}% completado`;
-  lastUpdated.textContent = formatClock(new Date());
+  if (overallPercent) overallPercent.textContent = `${percent}%`;
+  if (closedCount) closedCount.textContent = `${closed}/${visible.length}`;
+  if (remainingCount) remainingCount.textContent = `${globalRemaining}`;
+  if (timelineLabel) timelineLabel.textContent = `${percent}% completado`;
+  if (lastUpdated) lastUpdated.textContent = formatClock(new Date());
 
   const active = visible.filter((task) => !task.completed && task.deposit !== "Cierre").length;
   const inProgress = visible.filter((task) => task.status === "En curso").length;
@@ -1200,9 +1200,9 @@ function updateStats() {
   const overdueTasks = visible.filter((task) => taskDelayInfo(task).state === "overdue" && !task.completed);
   const overdue = overdueTasks.length;
 
-  activeCount.textContent = String(active);
-  inProgressCount.textContent = String(inProgress);
-  closingCount.textContent = String(closing);
+  if (activeCount) activeCount.textContent = String(active);
+  if (inProgressCount) inProgressCount.textContent = String(inProgress);
+  if (closingCount) closingCount.textContent = String(closing);
   if (riskCount) {
     riskCount.textContent = String(overdue);
   }
