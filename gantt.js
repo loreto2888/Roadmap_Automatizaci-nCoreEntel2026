@@ -952,7 +952,3 @@ setUpdatedDate();
 updateCurrentDateAndCounter(payload);
 window.setInterval(() => updateCurrentDateAndCounter(payload), 1000);
 window.setInterval(syncCalendarToCurrentMonth, 60000);
-
-if (bottomSpacer) {
-  bottomSpacer.style.width = `${Math.max(1200, payload.tasks.length * getColWidthPx() * 1.6)}px`;
-}

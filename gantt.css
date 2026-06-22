@@ -213,12 +213,12 @@ h1 {
 
 .gantt-head-left {
   display: grid;
-  grid-template-columns: minmax(150px, 0.82fr) 34px 58px 58px 84px 92px 58px;
+  grid-template-columns: minmax(146px, 0.82fr) 32px 54px 54px 80px 84px 52px;
   gap: 0;
   align-items: center;
-  padding: 10px 8px;
-  font-size: 0.72rem;
-  letter-spacing: 0.1em;
+  padding: 9px 6px;
+  font-size: 0.69rem;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   font-weight: 800;
   background: rgba(255, 255, 255, 0.08);
@@ -229,7 +229,7 @@ h1 {
 }
 
 .gantt-head-left > span {
-  padding: 0 6px;
+  padding: 0 4px;
   text-align: center;
 }
 
@@ -254,10 +254,10 @@ h1 {
 
 .gantt-row-left {
   display: grid;
-  grid-template-columns: minmax(150px, 0.82fr) 34px 58px 58px 84px 92px 58px;
+  grid-template-columns: minmax(146px, 0.82fr) 32px 54px 54px 80px 84px 52px;
   gap: 0;
   align-items: center;
-  padding: 10px 8px;
+  padding: 9px 6px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   font-size: 0.9rem;
   min-height: 50px;
