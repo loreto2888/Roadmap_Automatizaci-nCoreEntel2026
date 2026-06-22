@@ -213,7 +213,7 @@ h1 {
 
 .gantt-head-left {
   display: grid;
-  grid-template-columns: minmax(160px, 0.95fr) 34px 82px 82px 96px 92px 76px;
+  grid-template-columns: minmax(150px, 0.88fr) 34px 78px 78px 96px 112px 110px;
   gap: 0;
   align-items: center;
   padding: 9px 6px;
@@ -231,6 +231,9 @@ h1 {
 .gantt-head-left > span {
   padding: 0 4px;
   text-align: center;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .gantt-head-left .col-task {
@@ -254,7 +257,7 @@ h1 {
 
 .gantt-row-left {
   display: grid;
-  grid-template-columns: minmax(160px, 0.95fr) 34px 82px 82px 96px 92px 76px;
+  grid-template-columns: minmax(150px, 0.88fr) 34px 78px 78px 96px 112px 110px;
   gap: 0;
   align-items: center;
   padding: 9px 6px;
@@ -268,6 +271,7 @@ h1 {
   text-align: center;
   overflow: hidden;
   text-overflow: ellipsis;
+  min-width: 0;
   white-space: nowrap;
 }
 
