@@ -285,6 +285,11 @@ function renderGanttRows(payload) {
   const now = new Date();
   const timelineWidth = payload.timelineWidth || Math.max(1200, payload.spanDays * colWidthPx / (colWidthDays || 1));
 
+  const timelineTrack = document.createElement("div");
+  timelineTrack.className = "gantt-timeline-track";
+  timelineTrack.style.width = `${timelineWidth}px`;
+  timelineTrack.style.minWidth = `${timelineWidth}px`;
+
   // Add today line
   const daysFromMin = daysBetween(payload.minDate, now) - 1;
   const todayLeft = (daysFromMin / (colWidthDays || 1)) * colWidthPx;
@@ -292,18 +297,22 @@ function renderGanttRows(payload) {
     const todayLine = document.createElement("div");
     todayLine.className = "gantt-today-line";
     todayLine.style.left = todayLeft + "px";
-    container.appendChild(todayLine);
+    timelineTrack.appendChild(todayLine);
   }
 
   // Render each task row
   payload.tasks.forEach((task, idx) => {
     const rowDiv = document.createElement("div");
     rowDiv.className = "gantt-row-right";
+    rowDiv.style.width = `${timelineWidth}px`;
     rowDiv.style.minWidth = `${timelineWidth}px`;
+    rowDiv.style.flex = "none";
 
     const barContainer = document.createElement("div");
     barContainer.className = "timeline-bar-container";
+    barContainer.style.width = `${timelineWidth}px`;
     barContainer.style.minWidth = `${timelineWidth}px`;
+    barContainer.style.flex = "none";
 
     // Calculate bar position and width
     const startOffset = daysBetween(payload.minDate, task.startDate) - 1;
@@ -326,8 +335,10 @@ function renderGanttRows(payload) {
 
     barContainer.appendChild(bar);
     rowDiv.appendChild(barContainer);
-    container.appendChild(rowDiv);
+    timelineTrack.appendChild(rowDiv);
   });
+
+  container.appendChild(timelineTrack);
 }
 
 // ============= Sync Scroll =============
