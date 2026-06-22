@@ -550,8 +550,8 @@ h1 {
 .gantt-dependencies {
   position: absolute;
   top: 0;
-  left: 0;
-  width: 100%;
+  left: 14px;
+  width: calc(100% - 14px);
   height: 100%;
   pointer-events: none;
   z-index: 5;
@@ -582,6 +582,7 @@ h1 {
   height: 60px;
   overflow-x: auto;
   overflow-y: hidden;
+  padding-left: 14px;
 }
 
 .gantt-timeline-col {
@@ -613,6 +614,7 @@ h1 {
   overflow-y: auto;
   overflow-x: auto;
   position: relative;
+  padding-left: 14px;
 }
 
 .gantt-row-right {
