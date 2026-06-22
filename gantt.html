@@ -17,7 +17,7 @@
     <main class="gantt-shell">
       <header class="gantt-header">
         <div>
-          <p class="eyebrow">Planificacion visual</p>
+          <p class="eyebrow">Planificacion visual profesional</p>
           <h1>Carta Gantt del Roadmap</h1>
           <p id="updatedAt" class="meta">Actualizado: --</p>
           <div class="meta-strip">
@@ -26,30 +26,43 @@
           </div>
         </div>
         <div class="actions">
-          <a class="btn ghost" href="index.html">Volver al Roadmap</a>
-          <button id="downloadCsv" class="btn" type="button">Descargar Gantt CSV</button>
+          <button id="zoomOut" class="btn ghost icon-btn" title="Alejar">−</button>
+          <button id="zoomIn" class="btn ghost icon-btn" title="Acercar">+</button>
+          <a class="btn ghost" href="index.html">Volver</a>
+          <button id="downloadCsv" class="btn" type="button">Descargar CSV</button>
         </div>
       </header>
 
       <section class="legend" aria-label="Leyenda por etiqueta">
-        <span class="legend-item entel">Entel</span>
-        <span class="legend-item intellicore">Intellicore</span>
-        <span class="legend-item gestion">Gestion</span>
-        <span class="legend-item splunk">Splunk</span>
-        <span class="legend-item conjunta">Conjunta</span>
+        <span class="legend-item entel">■ Entel</span>
+        <span class="legend-item intellicore">■ Intellicore</span>
+        <span class="legend-item gestion">■ Gestion</span>
+        <span class="legend-item splunk">■ Splunk</span>
+        <span class="legend-item conjunta">■ Conjunta</span>
+        <span class="legend-item legend-completed">✓ Completada</span>
       </section>
 
-      <section class="gantt-table" aria-label="Tabla Gantt">
-        <div class="gantt-head">
-          <span>Tarea</span>
-          <span>Fecha inicio</span>
-          <span>Fecha termino</span>
-          <span>Duracion</span>
-          <span>Estado</span>
-          <span>Linea de tiempo</span>
+      <div class="gantt-container">
+        <div class="gantt-sidebar">
+          <div class="gantt-head-left">
+            <span class="col-task">Tarea</span>
+            <span class="col-pct">%</span>
+            <span class="col-start">Inicio</span>
+            <span class="col-end">Fin</span>
+            <span class="col-dur">Dur.</span>
+          </div>
+          <div id="ganttRowsLeft" class="gantt-rows-left"></div>
         </div>
-        <div id="ganttRows" class="gantt-rows"></div>
-      </section>
+
+        <div class="gantt-viewport">
+          <div class="gantt-timeline-header" id="ganttTimelineHeader"></div>
+          <div class="gantt-rows-container" id="ganttRowsContainer"></div>
+        </div>
+      </div>
+
+      <div class="gantt-legend-detail">
+        <p><small>💡 Arrastra el scroll para navegar • Usa los botones +/− para cambiar escala</small></p>
+      </div>
     </main>
 
     <script src="gantt.js"></script>
