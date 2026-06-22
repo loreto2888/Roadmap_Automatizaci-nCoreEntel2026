@@ -383,53 +383,65 @@ function setUpdatedDate() {
 let calendarMonth = new Date();
 
 function renderCalendar() {
-  const calendarDiv = document.getElementById("ganttCalendar");
-  if (!calendarDiv) return;
+  const container = document.getElementById("ganttCalendarContainer");
+  if (!container) return;
 
-  const year = calendarMonth.getFullYear();
-  const month = calendarMonth.getMonth();
-  
-  const monthName = calendarMonth.toLocaleDateString("es-CL", { month: "long", year: "numeric" }).replace(/^\w/, (c) => c.toUpperCase());
-  
-  const firstDay = new Date(year, month, 1);
-  const lastDay = new Date(year, month + 1, 0);
-  const startDate = new Date(firstDay);
-  startDate.setDate(startDate.getDate() - firstDay.getDay());
+  container.innerHTML = "";
 
-  let html = `
-    <div class="calendar-month-year">${monthName}</div>
-    <div class="calendar-weekdays">
-      <div class="calendar-weekday">Do</div>
-      <div class="calendar-weekday">Lu</div>
-      <div class="calendar-weekday">Ma</div>
-      <div class="calendar-weekday">Mi</div>
-      <div class="calendar-weekday">Ju</div>
-      <div class="calendar-weekday">Vi</div>
-      <div class="calendar-weekday">Sa</div>
-    </div>
-    <div class="calendar-days">
-  `;
+  // Render current month and next month
+  for (let offset = 0; offset < 2; offset++) {
+    const monthDate = new Date(calendarMonth);
+    monthDate.setMonth(calendarMonth.getMonth() + offset);
+    
+    const year = monthDate.getFullYear();
+    const month = monthDate.getMonth();
+    
+    const monthName = monthDate.toLocaleDateString("es-CL", { month: "long", year: "numeric" }).replace(/^\w/, (c) => c.toUpperCase());
+    
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const startDate = new Date(firstDay);
+    startDate.setDate(startDate.getDate() - firstDay.getDay());
 
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+    const calendarDiv = document.createElement("div");
+    calendarDiv.className = "gantt-calendar";
 
-  for (let i = 0; i < 42; i++) {
-    const currentDate = new Date(startDate);
-    currentDate.setDate(startDate.getDate() + i);
-    const isCurrentMonth = currentDate.getMonth() === month;
-    const isToday = currentDate.getTime() === today.getTime();
-    const dateNum = currentDate.getDate();
+    let html = `
+      <div class="calendar-month-year">${monthName}</div>
+      <div class="calendar-weekdays">
+        <div class="calendar-weekday">Do</div>
+        <div class="calendar-weekday">Lu</div>
+        <div class="calendar-weekday">Ma</div>
+        <div class="calendar-weekday">Mi</div>
+        <div class="calendar-weekday">Ju</div>
+        <div class="calendar-weekday">Vi</div>
+        <div class="calendar-weekday">Sa</div>
+      </div>
+      <div class="calendar-days">
+    `;
 
-    const classes = ["calendar-day"];
-    if (!isCurrentMonth) classes.push("disabled");
-    if (isToday) classes.push("today");
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
 
-    const dateStr = currentDate.toISOString().split("T")[0];
-    html += `<div class="calendar-day ${classes.join(" ")}" data-date="${dateStr}" onclick="handleCalendarClick('${dateStr}')">${dateNum}</div>`;
+    for (let i = 0; i < 42; i++) {
+      const currentDate = new Date(startDate);
+      currentDate.setDate(startDate.getDate() + i);
+      const isCurrentMonth = currentDate.getMonth() === month;
+      const isToday = currentDate.getTime() === today.getTime();
+      const dateNum = currentDate.getDate();
+
+      const classes = ["calendar-day"];
+      if (!isCurrentMonth) classes.push("other-month");
+      if (isToday) classes.push("today");
+
+      const dateStr = currentDate.toISOString().split("T")[0];
+      html += `<div class="calendar-day ${classes.join(" ")}" data-date="${dateStr}" onclick="handleCalendarClick('${dateStr}')">${dateNum}</div>`;
+    }
+
+    html += `</div>`;
+    calendarDiv.innerHTML = html;
+    container.appendChild(calendarDiv);
   }
-
-  html += `</div>`;
-  calendarDiv.innerHTML = html;
 }
 
 function handleCalendarClick(dateStr) {
@@ -437,7 +449,7 @@ function handleCalendarClick(dateStr) {
   selectedDays.forEach((d) => d.classList.remove("selected"));
   
   const clicked = document.querySelector(`[data-date="${dateStr}"]`);
-  if (clicked && !clicked.classList.contains("disabled")) {
+  if (clicked && !clicked.classList.contains("disabled") && !clicked.classList.contains("other-month")) {
     clicked.classList.add("selected");
   }
 }

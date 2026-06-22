@@ -291,31 +291,34 @@ h1 {
   position: relative;
 }
 
-.calendar-toolbar {
+.calendar-header {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
+  gap: 12px;
+  padding: 16px 14px;
+  background: linear-gradient(180deg, rgba(8, 14, 27, 0.6), rgba(8, 14, 27, 0.3));
   border-bottom: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.03);
-  flex-shrink: 0;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.calendar-container {
+  display: flex;
+  gap: 24px;
+  justify-content: center;
+  flex: 1;
+  min-width: 600px;
   flex-wrap: wrap;
 }
 
-.calendar-wrapper {
-  flex: 1;
-  display: flex;
-  justify-content: center;
-  min-width: 300px;
-}
-
 .gantt-calendar {
-  background: rgba(17, 29, 53, 0.8);
+  background: rgba(17, 29, 53, 0.7);
   border: 1px solid rgba(103, 169, 223, 0.3);
   border-radius: 8px;
   padding: 12px;
   color: var(--text);
-  font-size: 0.85rem;
+  font-size: 0.82rem;
 }
 
 .calendar-month-year {
@@ -323,12 +326,13 @@ h1 {
   font-weight: 700;
   margin-bottom: 10px;
   color: #8ac8ff;
+  font-size: 0.9rem;
 }
 
 .calendar-weekdays {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 4px;
+  gap: 3px;
   margin-bottom: 6px;
   text-align: center;
 }
@@ -336,36 +340,40 @@ h1 {
 .calendar-weekday {
   font-weight: 600;
   color: var(--muted);
-  font-size: 0.7rem;
+  font-size: 0.68rem;
+  width: 26px;
+  text-align: center;
 }
 
 .calendar-days {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 4px;
+  gap: 3px;
 }
 
 .calendar-day {
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 4px;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   cursor: pointer;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.04);
   border: 1px solid transparent;
   transition: all 0.2s ease;
+  color: var(--muted);
 }
 
-.calendar-day:hover {
+.calendar-day:hover:not(.disabled) {
   background: rgba(103, 169, 223, 0.2);
   border-color: rgba(103, 169, 223, 0.5);
+  color: var(--text);
 }
 
 .calendar-day.today {
-  background: rgba(143, 245, 176, 0.2);
+  background: rgba(143, 245, 176, 0.25);
   border-color: #8ef5b0;
   color: #8ef5b0;
   font-weight: 700;
@@ -375,15 +383,22 @@ h1 {
   background: rgba(103, 169, 223, 0.4);
   border-color: #8ac8ff;
   color: #fff;
+  font-weight: 600;
 }
 
 .calendar-day.in-range {
   background: rgba(103, 169, 223, 0.15);
+  color: #8ac8ff;
 }
 
 .calendar-day.disabled {
-  color: rgba(157, 176, 209, 0.4);
+  color: rgba(157, 176, 209, 0.2);
   cursor: not-allowed;
+  background: transparent;
+}
+
+.calendar-day.other-month {
+  color: rgba(157, 176, 209, 0.3);
 }
 
 /* Gantt Dependencies (Dependency Lines) */
@@ -646,6 +661,10 @@ h1 {
   .gantt-row-left {
     grid-template-columns: 120px 40px 50px 50px 40px;
   }
+
+  .calendar-container {
+    min-width: 400px;
+  }
 }
 
 @media (max-width: 768px) {
@@ -665,5 +684,15 @@ h1 {
   .gantt-viewport {
     flex: 1;
     min-height: 300px;
+  }
+
+  .calendar-header {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .calendar-container {
+    min-width: 100%;
+    gap: 12px;
   }
 }
