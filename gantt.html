@@ -27,7 +27,6 @@
         </div>
         <div class="actions">
           <button id="zoomOut" class="btn ghost icon-btn" title="Alejar">−</button>
-          <div id="ganttCalendarContainer" class="calendar-container-inline"></div>
           <button id="zoomIn" class="btn ghost icon-btn" title="Acercar">+</button>
           <a class="btn ghost" href="index.html">Volver</a>
           <button id="downloadCsv" class="btn" type="button">Descargar CSV</button>
@@ -41,11 +40,6 @@
         <span class="legend-item splunk">■ Splunk</span>
         <span class="legend-item conjunta">■ Conjunta</span>
         <span class="legend-item legend-completed">✓ Completada</span>
-        <div class="legend-calendar-controls">
-          <button id="calendarPrevMonth" class="btn ghost icon-btn" title="Mes anterior">←</button>
-          <button id="calendarToday" class="btn ghost" title="Hoy">Hoy</button>
-          <button id="calendarNextMonth" class="btn ghost icon-btn" title="Mes siguiente">→</button>
-        </div>
       </section>
 
       <div class="gantt-container">
@@ -55,7 +49,14 @@
             <span class="col-pct">%</span>
             <span class="col-start">Inicio</span>
             <span class="col-end">Fin</span>
-            <span class="col-dur">Dur.</span>
+            <span class="col-dep">Dep.</span>
+            <span class="col-cal">Cal</span>
+            <span class="col-status">Estado</span>
+          </div>
+          <div class="calendar-sidebar-controls">
+            <button id="calendarPrevMonth" class="btn ghost icon-btn" title="Mes anterior">←</button>
+            <div id="ganttCalendarContainer" class="calendar-sidebar-container"></div>
+            <button id="calendarNextMonth" class="btn ghost icon-btn" title="Mes siguiente">→</button>
           </div>
           <div id="ganttRowsLeft" class="gantt-rows-left"></div>
         </div>

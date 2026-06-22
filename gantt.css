@@ -120,15 +120,6 @@ h1 {
   flex-wrap: wrap;
   margin-bottom: 14px;
   align-items: center;
-  justify-content: space-between;
-}
-
-.legend-calendar-controls {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-  padding-left: 16px;
-  border-left: 1px solid var(--line);
 }
 
 .legend-item {
@@ -200,7 +191,7 @@ h1 {
 
 .gantt-head-left {
   display: grid;
-  grid-template-columns: minmax(180px, 1fr) 45px 60px 60px 50px;
+  grid-template-columns: minmax(140px, 0.8fr) 35px 55px 55px 45px 180px 50px;
   gap: 0;
   align-items: center;
   padding: 10px 8px;
@@ -225,6 +216,10 @@ h1 {
   padding-left: 12px;
 }
 
+.gantt-head-left .col-cal {
+  text-align: center;
+}
+
 .gantt-head-left .col-pct {
   text-align: center;
 }
@@ -237,7 +232,7 @@ h1 {
 
 .gantt-row-left {
   display: grid;
-  grid-template-columns: minmax(180px, 1fr) 45px 60px 60px 50px;
+  grid-template-columns: minmax(140px, 0.8fr) 35px 55px 55px 45px 180px 50px;
   gap: 0;
   align-items: center;
   padding: 10px 8px;
@@ -290,6 +285,34 @@ h1 {
   color: #8ef5b0;
 }
 
+.dep-badge {
+  background: rgba(103, 169, 223, 0.15);
+  color: #8ac8ff;
+  padding: 2px 4px;
+  border-radius: 3px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.status-badge {
+  background: rgba(143, 245, 176, 0.15);
+  color: #8ef5b0;
+  padding: 3px 6px;
+  border-radius: 3px;
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.status-badge.pending {
+  background: rgba(157, 199, 123, 0.15);
+  color: #b6e394;
+}
+
 /* Gantt Viewport */
 .gantt-viewport {
   flex: 1;
@@ -298,6 +321,35 @@ h1 {
   overflow: hidden;
   background: rgba(17, 29, 53, 0.3);
   position: relative;
+}
+
+.calendar-sidebar-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px;
+  border-bottom: 1px solid var(--line);
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.calendar-sidebar-container {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  min-width: 160px;
+}
+
+.calendar-sidebar-container .gantt-calendar {
+  background: rgba(17, 29, 53, 0.6);
+  border: 1px solid rgba(103, 169, 223, 0.2);
+  border-radius: 4px;
+  padding: 6px;
+  color: var(--text);
+  font-size: 0.62rem;
+  min-width: 160px;
 }
 
 .calendar-header {

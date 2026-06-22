@@ -165,7 +165,7 @@ function renderLeftPanel(payload) {
 
   leftRows.innerHTML = "";
 
-  payload.tasks.forEach((task) => {
+  payload.tasks.forEach((task, idx) => {
     const pct = task.completed ? 100 : 0;
     const row = document.createElement("div");
     row.className = "gantt-row-left";
@@ -184,10 +184,27 @@ function renderLeftPanel(payload) {
     const endSpan = document.createElement("span");
     endSpan.textContent = formatDate(task.endDate);
 
-    const durationSpan = document.createElement("span");
-    durationSpan.textContent = `${task.duration}d`;
+    // Dependencia: mostrar si es dependiente de la tarea anterior
+    const depSpan = document.createElement("span");
+    depSpan.className = "dep-badge";
+    if (idx > 0) {
+      depSpan.textContent = payload.tasks[idx - 1].id;
+    } else {
+      depSpan.textContent = "-";
+    }
 
-    row.append(title, pctSpan, startSpan, endSpan, durationSpan);
+    // Calendario: mostrar fecha de inicio
+    const calSpan = document.createElement("span");
+    calSpan.className = "status-badge";
+    calSpan.textContent = task.startDate.getDate();
+    calSpan.title = formatDate(task.startDate);
+
+    // Estado
+    const statusSpan = document.createElement("span");
+    statusSpan.className = `status-badge ${task.completed ? "" : "pending"}`;
+    statusSpan.textContent = task.status === "Cerrada" ? "✓" : "○";
+
+    row.append(title, pctSpan, startSpan, endSpan, depSpan, calSpan, statusSpan);
     leftRows.appendChild(row);
   });
 }
@@ -380,16 +397,19 @@ function setUpdatedDate() {
 }
 
 // ============= Calendar Functionality =============
-let calendarMonth = new Date();
+let calendarMonth = new Date(2026, 3, 1); // Empezar en Abril 2026
 
 function renderCalendar() {
   const container = document.getElementById("ganttCalendarContainer");
   if (!container) return;
 
   container.innerHTML = "";
-  container.className = "calendar-container-inline";
+  container.className = "calendar-sidebar-container";
 
-  // Render current month only (compact version)
+  // Validar que esté entre abril (mes 3) y diciembre (mes 11)
+  if (calendarMonth.getMonth() < 3) calendarMonth.setMonth(3);
+  if (calendarMonth.getMonth() > 11) calendarMonth.setMonth(11);
+
   const monthDate = new Date(calendarMonth);
   const year = monthDate.getFullYear();
   const month = monthDate.getMonth();
@@ -397,7 +417,6 @@ function renderCalendar() {
   const monthName = monthDate.toLocaleDateString("es-CL", { month: "short", year: "2-digit" });
   
   const firstDay = new Date(year, month, 1);
-  const lastDay = new Date(year, month + 1, 0);
   const startDate = new Date(firstDay);
   startDate.setDate(startDate.getDate() - firstDay.getDay());
 
@@ -499,11 +518,11 @@ function renderDependencies(payload) {
 function setupCalendarControls() {
   const prevBtn = document.getElementById("calendarPrevMonth");
   const nextBtn = document.getElementById("calendarNextMonth");
-  const todayBtn = document.getElementById("calendarToday");
 
   if (prevBtn) {
     prevBtn.addEventListener("click", () => {
       calendarMonth.setMonth(calendarMonth.getMonth() - 1);
+      if (calendarMonth.getMonth() < 3) calendarMonth.setMonth(3);
       renderCalendar();
     });
   }
@@ -511,13 +530,7 @@ function setupCalendarControls() {
   if (nextBtn) {
     nextBtn.addEventListener("click", () => {
       calendarMonth.setMonth(calendarMonth.getMonth() + 1);
-      renderCalendar();
-    });
-  }
-
-  if (todayBtn) {
-    todayBtn.addEventListener("click", () => {
-      calendarMonth = new Date();
+      if (calendarMonth.getMonth() > 11) calendarMonth.setMonth(11);
       renderCalendar();
     });
   }
