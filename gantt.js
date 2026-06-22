@@ -148,7 +148,7 @@ function renderRows(payload) {
 let zoomLevel = 1;
 const MIN_ZOOM = 0.5;
 const MAX_ZOOM = 3;
-const DAYS_PER_COL = 7;
+const DAYS_PER_COL = 5;
 
 function getColWidthPx() {
   return 80 * zoomLevel;
@@ -220,9 +220,16 @@ function renderTimelineHeader(payload) {
   const colWidthDays = getColWidthDays();
 
   let currentDate = new Date(payload.minDate);
+  // Ajustar a lunes más próximo
+  const dayOfWeek = currentDate.getDay();
+  if (dayOfWeek !== 1) {
+    const daysToAdd = dayOfWeek === 0 ? 1 : (1 - dayOfWeek + 7) % 7;
+    currentDate.setDate(currentDate.getDate() + daysToAdd);
+  }
+  
   let totalWidth = 0;
 
-  const diasSemana = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
+  const diasSemana = ["D", "L", "M", "M", "J", "V", "S"];
 
   while (currentDate <= payload.maxDate) {
     const col = document.createElement("div");
@@ -230,25 +237,29 @@ function renderTimelineHeader(payload) {
     col.style.minWidth = colWidthPx + "px";
     col.style.width = colWidthPx + "px";
 
-    // Calcular rango de fechas
+    // Calcular rango de fechas (Lunes a Viernes)
     const dateStart = currentDate.getDate();
-    const dateEnd = new Date(currentDate.getTime() + (colWidthDays - 1) * 24 * 60 * 60 * 1000);
+    const dateEnd = new Date(currentDate.getTime() + 4 * 24 * 60 * 60 * 1000); // Viernes (4 días después del lunes)
     const dayEnd = dateEnd.getDate();
     
     // Obtener mes abreviado
     const month = currentDate.toLocaleDateString("es-CL", { month: "short" });
     
-    // Obtener día de la semana del inicio
-    const dayWeekStart = diasSemana[currentDate.getDay()];
-    const dayWeekEnd = diasSemana[dateEnd.getDay()];
+    // Generar rango de abreviaturas de días (L M M J V)
+    let daysLabel = "";
+    for (let i = 0; i < 5; i++) {
+      const checkDate = new Date(currentDate.getTime() + i * 24 * 60 * 60 * 1000);
+      daysLabel += diasSemana[checkDate.getDay()] + " ";
+    }
+    daysLabel = daysLabel.trim();
 
     col.innerHTML = `
       <div class="gantt-timeline-col-week">${dateStart}-${dayEnd} ${month}</div>
-      <div class="gantt-timeline-col-date">${dayWeekStart} a ${dayWeekEnd}</div>
+      <div class="gantt-timeline-col-date">${daysLabel}</div>
     `;
 
     header.appendChild(col);
-    currentDate = new Date(currentDate.getTime() + colWidthDays * 24 * 60 * 60 * 1000);
+    currentDate = new Date(currentDate.getTime() + 7 * 24 * 60 * 60 * 1000); // Avanzar 7 días al siguiente lunes
     totalWidth += colWidthPx;
   }
 }
