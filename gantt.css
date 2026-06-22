@@ -593,6 +593,12 @@ h1 {
   min-width: 0;
 }
 
+.gantt-timeline-track {
+  display: flex;
+  width: max-content;
+  min-width: max-content;
+}
+
 .gantt-timeline-col {
   min-width: 80px;
   padding: 8px 4px;

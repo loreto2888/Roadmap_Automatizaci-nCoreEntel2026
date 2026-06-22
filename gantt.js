@@ -215,6 +215,8 @@ function renderTimelineHeader(payload) {
   if (!header) return;
 
   header.innerHTML = "";
+  const track = document.createElement("div");
+  track.className = "gantt-timeline-track";
 
   const colWidthPx = getColWidthPx();
   const colWidthDays = getColWidthDays();
@@ -258,10 +260,14 @@ function renderTimelineHeader(payload) {
       <div class="gantt-timeline-col-date">${daysLabel}</div>
     `;
 
-    header.appendChild(col);
+    track.appendChild(col);
     currentDate = new Date(currentDate.getTime() + 7 * 24 * 60 * 60 * 1000); // Avanzar 7 días al siguiente lunes
     totalWidth += colWidthPx;
   }
+
+  track.style.width = `${totalWidth}px`;
+  track.style.minWidth = `${totalWidth}px`;
+  header.appendChild(track);
 
   payload.timelineWidth = totalWidth;
 
