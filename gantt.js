@@ -347,7 +347,6 @@ function setupScrollSync() {
   const rightPanel = document.getElementById("ganttRowsContainer");
   const timelineHeader = document.getElementById("ganttTimelineHeader");
   const bottomScroll = document.getElementById("ganttHorizontalScroll");
-  const bottomSpacer = document.getElementById("ganttHorizontalSpacer");
   const svg = document.getElementById("ganttDependencies");
 
   if (!leftPanel || !rightPanel || !timelineHeader) return;
@@ -378,6 +377,36 @@ function setupScrollSync() {
     bottomScroll.addEventListener("scroll", () => {
       rightPanel.scrollLeft = bottomScroll.scrollLeft;
       timelineHeader.scrollLeft = bottomScroll.scrollLeft;
+    });
+
+    let isDragging = false;
+    let dragStartX = 0;
+    let dragStartScroll = 0;
+
+    const stopDrag = () => {
+      isDragging = false;
+      bottomScroll.classList.remove("dragging");
+      window.removeEventListener("pointermove", onDragMove);
+      window.removeEventListener("pointerup", stopDrag);
+      window.removeEventListener("pointercancel", stopDrag);
+    };
+
+    const onDragMove = (event) => {
+      if (!isDragging) return;
+      const deltaX = event.clientX - dragStartX;
+      bottomScroll.scrollLeft = dragStartScroll - deltaX;
+    };
+
+    bottomScroll.addEventListener("pointerdown", (event) => {
+      if (event.button !== 0) return;
+      isDragging = true;
+      dragStartX = event.clientX;
+      dragStartScroll = bottomScroll.scrollLeft;
+      bottomScroll.classList.add("dragging");
+      window.addEventListener("pointermove", onDragMove);
+      window.addEventListener("pointerup", stopDrag);
+      window.addEventListener("pointercancel", stopDrag);
+      event.preventDefault();
     });
   }
 }

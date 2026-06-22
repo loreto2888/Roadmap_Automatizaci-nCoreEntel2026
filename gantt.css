@@ -636,6 +636,14 @@ h1 {
   background: rgba(8, 14, 27, 0.9);
   scrollbar-gutter: stable;
   cursor: grab;
+  position: sticky;
+  bottom: 0;
+  z-index: 20;
+  touch-action: pan-x;
+}
+
+.gantt-horizontal-scroll.dragging {
+  cursor: grabbing;
 }
 
 .gantt-horizontal-scroll > div {
