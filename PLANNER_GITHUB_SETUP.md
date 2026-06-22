@@ -45,6 +45,17 @@ Crea:
 - `PLANNER_PLAN_ID`
 - `PLANNER_BUCKET_ID`
 
+### Para GitHub Pages
+
+El workflow de despliegue estático genera un snapshot `planner-roadmap.json` usando estos secrets:
+
+- `MS_TENANT_ID`
+- `MS_CLIENT_ID`
+- `MS_CLIENT_SECRET`
+- `PLANNER_PLAN_ID`
+
+`PLANNER_BUCKET_ID` no se usa en el snapshot de Pages porque se recorren todos los buckets del plan.
+
 ## 5) Probar
 
 Haz push desde VS Code:
@@ -72,3 +83,11 @@ Luego revisa `Actions` en GitHub y valida la tarea en Planner.
   - IDs incorrectos o plan fuera del alcance de permisos.
 - Error por app-only en Planner:
   - Usa Power Automate con webhook HTTP y desde GitHub llama ese webhook.
+
+## Checklist GitHub Pages
+
+- [ ] Crear secrets: `MS_TENANT_ID`, `MS_CLIENT_ID`, `MS_CLIENT_SECRET`, `PLANNER_PLAN_ID`
+- [ ] Confirmar que el workflow `.github/workflows/static.yml` ejecuta `node .github/scripts/export-planner-roadmap.js`
+- [ ] Hacer push a `main` para generar `planner-roadmap.json`
+- [ ] Verificar que el sitio cargue el snapshot en Pages sin depender de `localStorage`
+- [ ] Validar que cualquier cambio en Planner aparezca al refrescar la página publicada

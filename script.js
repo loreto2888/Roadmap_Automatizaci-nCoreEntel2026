@@ -271,11 +271,11 @@ let roadmap = [
         owner: "Johanna B.",
         start: "15-04-2026",
         pending: "",
-        deposit: "Cierre",
-        status: "Completa",
+        deposit: "Pendiente",
+        status: "En curso",
         priority: "Medium",
         scope: "Intellicore",
-        completed: true,
+        completed: false,
       },
       {
         id: "INTELLICORE-002",
@@ -283,11 +283,11 @@ let roadmap = [
         owner: "Johanna B.",
         start: "15-04-2026",
         pending: "",
-        deposit: "Cierre",
-        status: "Completa",
+        deposit: "Pendiente",
+        status: "En curso",
         priority: "Medium",
         scope: "Intellicore",
-        completed: true,
+        completed: false,
       },
       {
         id: "INTELLICORE-003",
@@ -307,11 +307,11 @@ let roadmap = [
         owner: "A / M",
         start: "11-05-2026",
         pending: "",
-        deposit: "Cierre",
-        status: "Completa",
+        deposit: "Pendiente",
+        status: "En curso",
         priority: "Medium",
         scope: "Intellicore",
-        completed: true,
+        completed: false,
       },
       {
         id: "INTELLICORE-006",
@@ -527,11 +527,11 @@ let roadmap = [
         owner: "Johanna Barrientos A.",
         start: "15-06-2026",
         pending: "19-06-2026",
-        deposit: "Cierre",
-        status: "Completa",
+        deposit: "Pendiente",
+        status: "En curso",
         priority: "Important",
         scope: "Gestion",
-        completed: true,
+        completed: false,
       },
     ],
   },
@@ -547,11 +547,11 @@ let roadmap = [
         owner: "Jorge Bourguet B.",
         start: "12-06-2026",
         pending: "",
-        deposit: "Curso",
-        status: "En curso",
+        deposit: "Cierre",
+        status: "Completa",
         priority: "Medium",
         scope: "Splunk",
-        completed: false,
+        completed: true,
       },
       {
         id: "SPLUNK-002",
@@ -559,11 +559,11 @@ let roadmap = [
         owner: "A / M / J",
         start: "19-05-2026",
         pending: "",
-        deposit: "Revision",
-        status: "En curso",
+        deposit: "Cierre",
+        status: "Completa",
         priority: "Medium",
         scope: "Splunk",
-        completed: false,
+        completed: true,
       },
       {
         id: "SPLUNK-003",
@@ -571,11 +571,11 @@ let roadmap = [
         owner: "A / M / J",
         start: "25-05-2026",
         pending: "",
-        deposit: "Curso",
-        status: "No iniciado",
+        deposit: "Cierre",
+        status: "Completa",
         priority: "Medium",
         scope: "Splunk",
-        completed: false,
+        completed: true,
       },
       {
         id: "SPLUNK-004",
@@ -965,6 +965,30 @@ function persistRoadmap() {
 
 function getVisibleTasks() {
   return getAllTasks().filter((task) => matchesFilter(task, activeFilter));
+}
+
+async function loadPlannerRoadmap() {
+  const sources = [
+    "/planner-roadmap.json?t=" + Date.now(),
+    "/api/planner/roadmap?t=" + Date.now(),
+  ];
+
+  for (const source of sources) {
+    try {
+      const response = await fetch(source, { cache: "no-store" });
+      if (!response.ok) continue;
+
+      const payload = await response.json();
+      const incomingRoadmap = sanitizeIncomingRoadmap(payload.roadmap);
+      if (incomingRoadmap && incomingRoadmap.length > 0) {
+        return { roadmap: incomingRoadmap, dependencies: payload.dependencies || {} };
+      }
+    } catch {
+      // Try the next source.
+    }
+  }
+
+  return { roadmap: null, dependencies: null };
 }
 
 function ensureScopeBars() {
@@ -1614,36 +1638,14 @@ async function syncFromPlannerApi() {
   plannerSyncInFlight = true;
 
   try {
-    const controller = new AbortController();
-    const timeoutId = window.setTimeout(() => controller.abort(), 10000);
-    const response = await fetch(`/api/planner/roadmap?t=${Date.now()}`, {
-      cache: "no-store",
-      signal: controller.signal,
-    });
-    window.clearTimeout(timeoutId);
-
-    if (!response.ok) {
-      let message = `HTTP ${response.status}`;
-
-      try {
-        const failure = await response.json();
-        message = failure?.message || failure?.error || message;
-      } catch {
-        // Keep the HTTP status text when the error body is not JSON.
-      }
-
-      throw new Error(message);
-    }
-
-    const payload = await response.json();
-    const incomingRoadmap = sanitizeIncomingRoadmap(payload.roadmap);
-    if (!incomingRoadmap || !incomingRoadmap.length) {
+    const loaded = await loadPlannerRoadmap();
+    if (!loaded.roadmap || !loaded.roadmap.length) {
       throw new Error("Sin tareas disponibles desde Planner");
     }
 
-    const nextSignature = JSON.stringify(incomingRoadmap);
+    const nextSignature = JSON.stringify(loaded.roadmap);
     if (nextSignature !== plannerSignature) {
-      roadmap = incomingRoadmap;
+      roadmap = loaded.roadmap;
       plannerSignature = nextSignature;
       planningSignature = "";
       knownAlertIds = new Set();
@@ -1654,19 +1656,15 @@ async function syncFromPlannerApi() {
     }
 
     // Actualizar dependencias si están disponibles
-    if (payload.dependencies) {
-      updateDependencies(payload.dependencies);
+    if (loaded.dependencies) {
+      updateDependencies(loaded.dependencies);
     }
 
-    if (payload.syncWarning && payload.syncWarning !== plannerSyncLastMessage) {
-      pushToast({ id: "PLANNER", priority: "Important", title: "Planner pendiente de autenticacion", owner: "Revisa la consola del servidor" }, "important");
-      plannerSyncLastMessage = payload.syncWarning;
+    if (plannerSyncLastMessage && plannerSyncLastMessage.startsWith("Planner")) {
+      plannerSyncLastMessage = "";
     }
 
     plannerSyncHealthy = true;
-    if (!payload.syncWarning) {
-      plannerSyncLastMessage = "";
-    }
     if (!plannerSyncNotified) {
       pushToast({ id: "PLANNER", priority: "Important", title: "Sincronizacion con Planner activa", owner: "Sistema" }, "important");
       plannerSyncNotified = true;
@@ -1699,7 +1697,6 @@ async function syncFromPlannerApi() {
 function startPlannerAutoSync() {
   syncFromPlannerApi();
   window.setInterval(() => {
-    if (!autoAdvance.checked) return;
     syncFromPlannerApi();
   }, 30000);
 }
@@ -1722,5 +1719,28 @@ renderRoadmap();
 ensureScopeBars();
 updateStats();
 startLivePulse();
-startPlannerAutoSync();
+
+(async () => {
+  const loaded = await loadPlannerRoadmap();
+  if (loaded.roadmap) {
+    const nextSignature = JSON.stringify(loaded.roadmap);
+    if (nextSignature !== plannerSignature) {
+      roadmap = loaded.roadmap;
+      plannerSignature = nextSignature;
+      planningSignature = "";
+      knownAlertIds = new Set();
+      notificationsInitialized = false;
+      renderRoadmap();
+      ensureScopeBars();
+      updateStats();
+    }
+
+    if (loaded.dependencies) {
+      updateDependencies(loaded.dependencies);
+    }
+  }
+
+  startPlannerAutoSync();
+})();
+
 window.setInterval(updateStats, 1000);

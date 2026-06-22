@@ -31,6 +31,17 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Export Planner roadmap snapshot
+        env:
+          MS_TENANT_ID: ${{ secrets.MS_TENANT_ID }}
+          MS_CLIENT_ID: ${{ secrets.MS_CLIENT_ID }}
+          MS_CLIENT_SECRET: ${{ secrets.MS_CLIENT_SECRET }}
+          PLANNER_PLAN_ID: ${{ secrets.PLANNER_PLAN_ID }}
+        run: node .github/scripts/export-planner-roadmap.js
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact

@@ -48,6 +48,45 @@ function parseRoadmapData() {
   }
 }
 
+function flattenRoadmap(roadmap) {
+  if (!Array.isArray(roadmap)) return [];
+
+  return roadmap.flatMap((lane) =>
+    (lane.tasks || []).map((task) => ({
+      id: task.id,
+      title: task.title,
+      scope: task.scope,
+      start: task.start,
+      pending: task.pending,
+      completed: Boolean(task.completed),
+    }))
+  );
+}
+
+async function loadRoadmapData() {
+  const sources = [
+    `/planner-roadmap.json?t=${Date.now()}`,
+    `/api/planner/roadmap?t=${Date.now()}`,
+  ];
+
+  for (const source of sources) {
+    try {
+      const response = await fetch(source, { cache: "no-store" });
+      if (!response.ok) continue;
+
+      const payload = await response.json();
+      const tasks = flattenRoadmap(payload.roadmap);
+      if (tasks.length > 0) {
+        return tasks;
+      }
+    } catch {
+      // Fall through to the next source.
+    }
+  }
+
+  return parseRoadmapData();
+}
+
 function withSchedule(tasks) {
   const normalized = tasks
     .map((task) => {
@@ -989,28 +1028,30 @@ function syncCalendarToCurrentMonth() {
 }
 
 // ============= Initialize =============
-const tasks = parseRoadmapData();
-const payload = withSchedule(tasks);
+(async () => {
+  const tasks = await loadRoadmapData();
+  const payload = withSchedule(tasks);
 
-// Calcula maxDate si no existe
-if (!payload.maxDate) {
-  const maxDate = payload.tasks.reduce((acc, item) => (item.endDate > acc ? item.endDate : acc), payload.tasks[0]?.endDate || new Date());
-  payload.maxDate = maxDate;
-}
+  // Calcula maxDate si no existe
+  if (!payload.maxDate) {
+    const maxDate = payload.tasks.reduce((acc, item) => (item.endDate > acc ? item.endDate : acc), payload.tasks[0]?.endDate || new Date());
+    payload.maxDate = maxDate;
+  }
 
-const yearEnd = new Date(payload.maxDate.getFullYear(), 11, 31);
-if (payload.maxDate < yearEnd) {
-  payload.maxDate = yearEnd;
-}
+  const yearEnd = new Date(payload.maxDate.getFullYear(), 11, 31);
+  if (payload.maxDate < yearEnd) {
+    payload.maxDate = yearEnd;
+  }
 
-renderLeftPanel(payload);
-renderTimelineHeader(payload);
-renderGanttRows(payload);
-renderDependencies(payload);
-setupScrollSync();
-setupZoomControls(payload);
-setupCalendarControls();
-renderCalendar();
-hookDownload(payload);
-setUpdatedDate();
-window.setInterval(syncCalendarToCurrentMonth, 60000);
+  renderLeftPanel(payload);
+  renderTimelineHeader(payload);
+  renderGanttRows(payload);
+  renderDependencies(payload);
+  setupScrollSync();
+  setupZoomControls(payload);
+  setupCalendarControls();
+  renderCalendar();
+  hookDownload(payload);
+  setUpdatedDate();
+  window.setInterval(syncCalendarToCurrentMonth, 60000);
+})();
