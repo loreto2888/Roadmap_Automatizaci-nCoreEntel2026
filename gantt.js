@@ -323,6 +323,8 @@ function setupScrollSync() {
   const leftPanel = document.getElementById("ganttRowsLeft");
   const rightPanel = document.getElementById("ganttRowsContainer");
   const timelineHeader = document.getElementById("ganttTimelineHeader");
+  const bottomScroll = document.getElementById("ganttHorizontalScroll");
+  const bottomSpacer = document.getElementById("ganttHorizontalSpacer");
   const svg = document.getElementById("ganttDependencies");
 
   if (!leftPanel || !rightPanel || !timelineHeader) return;
@@ -330,6 +332,9 @@ function setupScrollSync() {
   rightPanel.addEventListener("scroll", () => {
     leftPanel.scrollTop = rightPanel.scrollTop;
     timelineHeader.scrollLeft = rightPanel.scrollLeft;
+    if (bottomScroll) {
+      bottomScroll.scrollLeft = rightPanel.scrollLeft;
+    }
     if (svg) {
       svg.style.transform = `translate(${-rightPanel.scrollLeft}px, ${-rightPanel.scrollTop}px)`;
     }
@@ -341,7 +346,17 @@ function setupScrollSync() {
 
   timelineHeader.addEventListener("scroll", () => {
     rightPanel.scrollLeft = timelineHeader.scrollLeft;
+    if (bottomScroll) {
+      bottomScroll.scrollLeft = timelineHeader.scrollLeft;
+    }
   });
+
+  if (bottomScroll) {
+    bottomScroll.addEventListener("scroll", () => {
+      rightPanel.scrollLeft = bottomScroll.scrollLeft;
+      timelineHeader.scrollLeft = bottomScroll.scrollLeft;
+    });
+  }
 }
 
 // ============= Zoom Controls =============
@@ -937,3 +952,7 @@ setUpdatedDate();
 updateCurrentDateAndCounter(payload);
 window.setInterval(() => updateCurrentDateAndCounter(payload), 1000);
 window.setInterval(syncCalendarToCurrentMonth, 60000);
+
+if (bottomSpacer) {
+  bottomSpacer.style.width = `${Math.max(1200, payload.tasks.length * getColWidthPx() * 1.6)}px`;
+}
