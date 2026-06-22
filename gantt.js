@@ -270,7 +270,8 @@ function renderTimelineHeader(payload) {
     bottomSpacer.style.width = `${totalWidth}px`;
   }
 
-  header.style.minWidth = `${totalWidth}px`;
+  header.style.minWidth = "0";
+  header.style.width = "100%";
 }
 
 // ============= Render Gantt Rows (Timeline Bars) =============
