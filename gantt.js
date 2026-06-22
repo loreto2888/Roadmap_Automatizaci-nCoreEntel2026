@@ -951,6 +951,11 @@ if (!payload.maxDate) {
   payload.maxDate = maxDate;
 }
 
+const yearEnd = new Date(payload.maxDate.getFullYear(), 11, 31);
+if (payload.maxDate < yearEnd) {
+  payload.maxDate = yearEnd;
+}
+
 renderLeftPanel(payload);
 renderTimelineHeader(payload);
 renderGanttRows(payload);
