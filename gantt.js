@@ -84,7 +84,7 @@ async function loadRoadmapData() {
     }
   }
 
-  return parseRoadmapData();
+  return [];
 }
 
 function withSchedule(tasks) {

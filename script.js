@@ -677,7 +677,7 @@ function regroupRoadmapByScope(sourceRoadmap) {
     .filter((lane) => lane && lane.tasks.length > 0);
 }
 
-roadmap = regroupRoadmapByScope(roadmap);
+roadmap = [];
 
 const board = document.getElementById("board");
 const laneTemplate = document.getElementById("laneTemplate");
@@ -1470,6 +1470,24 @@ function updateDependencies(dependencies) {
 
 function renderRoadmap() {
   board.innerHTML = "";
+
+  if (!roadmap.length) {
+    const emptyState = document.createElement("section");
+    emptyState.className = "lane";
+    emptyState.innerHTML = `
+      <div class="lane-header">
+        <div>
+          <p class="lane-kicker">Planner</p>
+          <h2>Sincronizando datos</h2>
+        </div>
+      </div>
+      <div class="lane-track" style="padding: 24px; color: rgba(255,255,255,0.7);">
+        Esperando el roadmap actual desde Planner o el snapshot publicado.
+      </div>
+    `;
+    board.appendChild(emptyState);
+    return;
+  }
 
   roadmap.forEach((lane) => {
     const laneNode = laneTemplate.content.cloneNode(true);
