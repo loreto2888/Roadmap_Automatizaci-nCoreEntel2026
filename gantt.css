@@ -202,7 +202,7 @@ h1 {
 }
 
 .gantt-sidebar {
-  width: 500px;
+  width: 640px;
   flex-shrink: 0;
   border-right: 1px solid var(--line);
   display: flex;
@@ -213,12 +213,12 @@ h1 {
 
 .gantt-head-left {
   display: grid;
-  grid-template-columns: minmax(146px, 0.82fr) 32px 54px 54px 80px 84px 52px;
+  grid-template-columns: minmax(160px, 0.95fr) 34px 82px 82px 96px 92px 76px;
   gap: 0;
   align-items: center;
   padding: 9px 6px;
-  font-size: 0.69rem;
-  letter-spacing: 0.08em;
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   font-weight: 800;
   background: rgba(255, 255, 255, 0.08);
@@ -254,7 +254,7 @@ h1 {
 
 .gantt-row-left {
   display: grid;
-  grid-template-columns: minmax(146px, 0.82fr) 32px 54px 54px 80px 84px 52px;
+  grid-template-columns: minmax(160px, 0.95fr) 34px 82px 82px 96px 92px 76px;
   gap: 0;
   align-items: center;
   padding: 9px 6px;
@@ -268,6 +268,7 @@ h1 {
   text-align: center;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .task-title-left {
