@@ -1013,6 +1013,4 @@ setupCalendarControls();
 renderCalendar();
 hookDownload(payload);
 setUpdatedDate();
-updateCurrentDateAndCounter(payload);
-window.setInterval(() => updateCurrentDateAndCounter(payload), 1000);
 window.setInterval(syncCalendarToCurrentMonth, 60000);
