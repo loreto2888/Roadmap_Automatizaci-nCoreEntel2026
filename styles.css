@@ -88,9 +88,9 @@ body::before {
 .hero {
   display: grid;
   grid-template-columns: minmax(0, 1.5fr) minmax(340px, 0.9fr);
-  gap: 24px;
+  gap: 18px;
   align-items: end;
-  margin-bottom: 20px;
+  margin-bottom: 14px;
 }
 
 .eyebrow {
@@ -109,25 +109,25 @@ h1,
 
 h1 {
   margin: 0;
-  font-size: clamp(2.2rem, 5vw, 4.8rem);
-  line-height: 0.94;
+  font-size: clamp(2rem, 4.4vw, 4.2rem);
+  line-height: 0.96;
   letter-spacing: -0.05em;
-  max-width: 10ch;
+  max-width: 11ch;
 }
 
 .hero-copy {
-  margin: 16px 0 0;
+  margin: 12px 0 0;
   max-width: 62ch;
   color: var(--muted);
-  font-size: 1.02rem;
-  line-height: 1.7;
+  font-size: 0.98rem;
+  line-height: 1.6;
 }
 
 .stats-panel {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-  padding: 14px;
+  gap: 10px;
+  padding: 12px;
   border: 1px solid var(--panel-border);
   border-radius: var(--radius-xl);
   background: linear-gradient(180deg, rgba(12, 20, 36, 0.92), rgba(7, 14, 25, 0.9));
@@ -137,11 +137,11 @@ h1 {
 
 .stats-panel article {
   display: grid;
-  gap: 8px;
-  padding: 14px;
+  gap: 6px;
+  padding: 12px;
   border-radius: var(--radius-lg);
   background: rgba(255, 255, 255, 0.03);
-  min-height: 118px;
+  min-height: 104px;
 }
 
 .stats-panel span,
@@ -156,8 +156,8 @@ h1 {
 }
 
 .stats-panel strong {
-  font-size: clamp(1.25rem, 2.1vw, 1.8rem);
-  line-height: 1.05;
+  font-size: clamp(1.1rem, 1.9vw, 1.55rem);
+  line-height: 1.02;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1250,6 +1250,10 @@ h1 {
     grid-template-columns: 1fr;
   }
 
+  .stats-panel {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .planning-body {
     grid-template-columns: 1fr;
   }
@@ -1279,6 +1283,10 @@ h1 {
   .stats-panel,
   .control-bar {
     grid-template-columns: 1fr;
+  }
+
+  .stats-panel article {
+    min-height: auto;
   }
 
   .control-bar {
