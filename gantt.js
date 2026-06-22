@@ -204,7 +204,7 @@ function renderLeftPanel(payload) {
     statusSpan.className = `status-badge ${task.completed ? "" : "pending"}`;
     statusSpan.textContent = task.status === "Cerrada" ? "✓" : "○";
 
-    row.append(title, pctSpan, startSpan, endSpan, depSpan, calSpan, statusSpan);
+    row.append(title, pctSpan, startSpan, endSpan, depSpan, statusSpan, calSpan);
     leftRows.appendChild(row);
   });
 }
@@ -262,6 +262,15 @@ function renderTimelineHeader(payload) {
     currentDate = new Date(currentDate.getTime() + 7 * 24 * 60 * 60 * 1000); // Avanzar 7 días al siguiente lunes
     totalWidth += colWidthPx;
   }
+
+  payload.timelineWidth = totalWidth;
+
+  const bottomSpacer = document.getElementById("ganttHorizontalSpacer");
+  if (bottomSpacer) {
+    bottomSpacer.style.width = `${totalWidth}px`;
+  }
+
+  header.style.minWidth = `${totalWidth}px`;
 }
 
 // ============= Render Gantt Rows (Timeline Bars) =============
@@ -274,6 +283,7 @@ function renderGanttRows(payload) {
   const colWidthPx = getColWidthPx();
   const colWidthDays = getColWidthDays();
   const now = new Date();
+  const timelineWidth = payload.timelineWidth || Math.max(1200, payload.spanDays * colWidthPx / (colWidthDays || 1));
 
   // Add today line
   const daysFromMin = daysBetween(payload.minDate, now) - 1;
@@ -289,9 +299,11 @@ function renderGanttRows(payload) {
   payload.tasks.forEach((task, idx) => {
     const rowDiv = document.createElement("div");
     rowDiv.className = "gantt-row-right";
+    rowDiv.style.minWidth = `${timelineWidth}px`;
 
     const barContainer = document.createElement("div");
     barContainer.className = "timeline-bar-container";
+    barContainer.style.minWidth = `${timelineWidth}px`;
 
     // Calculate bar position and width
     const startOffset = daysBetween(payload.minDate, task.startDate) - 1;
