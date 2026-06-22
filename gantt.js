@@ -387,65 +387,62 @@ function renderCalendar() {
   if (!container) return;
 
   container.innerHTML = "";
+  container.className = "calendar-container-inline";
 
-  // Render current month and next month
-  for (let offset = 0; offset < 2; offset++) {
-    const monthDate = new Date(calendarMonth);
-    monthDate.setMonth(calendarMonth.getMonth() + offset);
-    
-    const year = monthDate.getFullYear();
-    const month = monthDate.getMonth();
-    
-    const monthName = monthDate.toLocaleDateString("es-CL", { month: "long", year: "numeric" }).replace(/^\w/, (c) => c.toUpperCase());
-    
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-    const startDate = new Date(firstDay);
-    startDate.setDate(startDate.getDate() - firstDay.getDay());
+  // Render current month only (compact version)
+  const monthDate = new Date(calendarMonth);
+  const year = monthDate.getFullYear();
+  const month = monthDate.getMonth();
+  
+  const monthName = monthDate.toLocaleDateString("es-CL", { month: "short", year: "2-digit" });
+  
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+  const startDate = new Date(firstDay);
+  startDate.setDate(startDate.getDate() - firstDay.getDay());
 
-    const calendarDiv = document.createElement("div");
-    calendarDiv.className = "gantt-calendar";
+  const calendarDiv = document.createElement("div");
+  calendarDiv.className = "gantt-calendar";
 
-    let html = `
-      <div class="calendar-month-year">${monthName}</div>
-      <div class="calendar-weekdays">
-        <div class="calendar-weekday">Do</div>
-        <div class="calendar-weekday">Lu</div>
-        <div class="calendar-weekday">Ma</div>
-        <div class="calendar-weekday">Mi</div>
-        <div class="calendar-weekday">Ju</div>
-        <div class="calendar-weekday">Vi</div>
-        <div class="calendar-weekday">Sa</div>
-      </div>
-      <div class="calendar-days">
-    `;
+  let html = `
+    <div class="calendar-month-year-inline">${monthName}</div>
+    <div class="calendar-weekdays-inline">
+      <div class="calendar-weekday-inline">D</div>
+      <div class="calendar-weekday-inline">L</div>
+      <div class="calendar-weekday-inline">M</div>
+      <div class="calendar-weekday-inline">M</div>
+      <div class="calendar-weekday-inline">J</div>
+      <div class="calendar-weekday-inline">V</div>
+      <div class="calendar-weekday-inline">S</div>
+    </div>
+    <div class="calendar-days-inline">
+  `;
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
-    for (let i = 0; i < 42; i++) {
-      const currentDate = new Date(startDate);
-      currentDate.setDate(startDate.getDate() + i);
-      const isCurrentMonth = currentDate.getMonth() === month;
-      const isToday = currentDate.getTime() === today.getTime();
-      const dateNum = currentDate.getDate();
+  for (let i = 0; i < 42; i++) {
+    const currentDate = new Date(startDate);
+    currentDate.setDate(startDate.getDate() + i);
+    const isCurrentMonth = currentDate.getMonth() === month;
+    const isToday = currentDate.getTime() === today.getTime();
+    const dateNum = currentDate.getDate();
 
-      const classes = ["calendar-day"];
-      if (!isCurrentMonth) classes.push("other-month");
-      if (isToday) classes.push("today");
+    const classes = ["calendar-day-inline"];
+    if (!isCurrentMonth) classes.push("other-month");
+    if (isToday) classes.push("today");
 
-      const dateStr = currentDate.toISOString().split("T")[0];
-      html += `<div class="calendar-day ${classes.join(" ")}" data-date="${dateStr}" onclick="handleCalendarClick('${dateStr}')">${dateNum}</div>`;
-    }
-
-    html += `</div>`;
-    calendarDiv.innerHTML = html;
-    container.appendChild(calendarDiv);
+    const dateStr = currentDate.toISOString().split("T")[0];
+    html += `<div class="calendar-day-inline ${classes.join(" ")}" data-date="${dateStr}" onclick="handleCalendarClick('${dateStr}')">${dateNum}</div>`;
   }
+
+  html += `</div>`;
+  calendarDiv.innerHTML = html;
+  container.appendChild(calendarDiv);
 }
 
 function handleCalendarClick(dateStr) {
-  const selectedDays = document.querySelectorAll(".calendar-day.selected");
+  const selectedDays = document.querySelectorAll(".calendar-day-inline.selected");
   selectedDays.forEach((d) => d.classList.remove("selected"));
   
   const clicked = document.querySelector(`[data-date="${dateStr}"]`);

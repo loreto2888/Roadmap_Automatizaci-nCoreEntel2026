@@ -120,6 +120,15 @@ h1 {
   flex-wrap: wrap;
   margin-bottom: 14px;
   align-items: center;
+  justify-content: space-between;
+}
+
+.legend-calendar-controls {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding-left: 16px;
+  border-left: 1px solid var(--line);
 }
 
 .legend-item {
@@ -292,24 +301,24 @@ h1 {
 }
 
 .calendar-header {
+  display: none;
+}
+
+.calendar-container-inline {
   display: flex;
+  gap: 8px;
   align-items: center;
-  gap: 12px;
-  padding: 16px 14px;
-  background: linear-gradient(180deg, rgba(8, 14, 27, 0.6), rgba(8, 14, 27, 0.3));
-  border-bottom: 1px solid var(--line);
-  margin-bottom: 12px;
-  flex-wrap: wrap;
   justify-content: center;
 }
 
-.calendar-container {
-  display: flex;
-  gap: 24px;
-  justify-content: center;
-  flex: 1;
-  min-width: 600px;
-  flex-wrap: wrap;
+.calendar-container-inline .gantt-calendar {
+  background: rgba(17, 29, 53, 0.7);
+  border: 1px solid rgba(103, 169, 223, 0.25);
+  border-radius: 6px;
+  padding: 8px;
+  color: var(--text);
+  font-size: 0.75rem;
+  min-width: 240px;
 }
 
 .gantt-calendar {
@@ -329,6 +338,14 @@ h1 {
   font-size: 0.9rem;
 }
 
+.calendar-month-year-inline {
+  text-align: center;
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: #8ac8ff;
+  font-size: 0.75rem;
+}
+
 .calendar-weekdays {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -345,10 +362,32 @@ h1 {
   text-align: center;
 }
 
+.calendar-weekdays-inline {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  margin-bottom: 4px;
+  text-align: center;
+}
+
+.calendar-weekday-inline {
+  font-weight: 600;
+  color: var(--muted);
+  font-size: 0.6rem;
+  width: 20px;
+  text-align: center;
+}
+
 .calendar-days {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 3px;
+}
+
+.calendar-days-inline {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
 }
 
 .calendar-day {
@@ -366,38 +405,53 @@ h1 {
   color: var(--muted);
 }
 
-.calendar-day:hover:not(.disabled) {
+.calendar-day-inline {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 3px;
+  font-size: 0.6rem;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+  color: var(--muted);
+}
+
+.calendar-day:hover:not(.disabled), .calendar-day-inline:hover:not(.disabled) {
   background: rgba(103, 169, 223, 0.2);
   border-color: rgba(103, 169, 223, 0.5);
   color: var(--text);
 }
 
-.calendar-day.today {
+.calendar-day.today, .calendar-day-inline.today {
   background: rgba(143, 245, 176, 0.25);
   border-color: #8ef5b0;
   color: #8ef5b0;
   font-weight: 700;
 }
 
-.calendar-day.selected {
+.calendar-day.selected, .calendar-day-inline.selected {
   background: rgba(103, 169, 223, 0.4);
   border-color: #8ac8ff;
   color: #fff;
   font-weight: 600;
 }
 
-.calendar-day.in-range {
+.calendar-day.in-range, .calendar-day-inline.in-range {
   background: rgba(103, 169, 223, 0.15);
   color: #8ac8ff;
 }
 
-.calendar-day.disabled {
+.calendar-day.disabled, .calendar-day-inline.disabled {
   color: rgba(157, 176, 209, 0.2);
   cursor: not-allowed;
   background: transparent;
 }
 
-.calendar-day.other-month {
+.calendar-day.other-month, .calendar-day-inline.other-month {
   color: rgba(157, 176, 209, 0.3);
 }
 
