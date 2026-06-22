@@ -196,13 +196,13 @@ function renderLeftPanel(payload) {
     // Calendario: mostrar fecha de inicio
     const calSpan = document.createElement("span");
     calSpan.className = "status-badge";
-    calSpan.textContent = task.startDate.getDate();
+    calSpan.textContent = task.startDate.toLocaleDateString("es-CL", { day: "2-digit", month: "short" });
     calSpan.title = formatDate(task.startDate);
 
     // Estado
     const statusSpan = document.createElement("span");
     statusSpan.className = `status-badge ${task.completed ? "" : "pending"}`;
-    statusSpan.textContent = task.status === "Cerrada" ? "✓" : "○";
+    statusSpan.textContent = task.status;
 
     row.append(title, pctSpan, startSpan, endSpan, depSpan, statusSpan, calSpan);
     leftRows.appendChild(row);
