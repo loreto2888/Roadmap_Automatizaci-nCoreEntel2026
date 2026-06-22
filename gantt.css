@@ -335,12 +335,15 @@ h1 {
 
 .calendar-top-strip {
   margin: 4px 0 10px;
-  padding: 0 18px;
+  padding: 0;
   flex: none;
   flex-direction: row;
   align-items: center;
   justify-content: center;
   gap: 8px;
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .calendar-sidebar-container {
@@ -348,18 +351,18 @@ h1 {
   gap: 4px;
   align-items: center;
   justify-content: center;
-  flex: 1;
+  flex: 0 0 auto;
   min-width: auto;
-  max-width: 190px;
+  max-width: 155px;
 }
 
 .calendar-sidebar-container .gantt-calendar {
   background: rgba(17, 29, 53, 0.95);
   border: 1px solid rgba(103, 169, 223, 0.5);
   border-radius: 12px;
-  padding: 8px;
+  padding: 6px;
   color: var(--text);
-  font-size: 0.66rem;
+  font-size: 0.58rem;
   min-width: auto;
   width: 100%;
   max-width: 100%;
@@ -406,9 +409,9 @@ h1 {
 .calendar-month-year-inline {
   text-align: center;
   font-weight: 700;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
   color: #8ac8ff;
-  font-size: 0.56rem;
+  font-size: 0.5rem;
 }
 
 .calendar-weekdays {
@@ -431,15 +434,15 @@ h1 {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
   gap: 1px;
-  margin-bottom: 2px;
+  margin-bottom: 1px;
   text-align: center;
 }
 
 .calendar-weekday-inline {
   font-weight: 600;
   color: var(--muted);
-  font-size: 0.44rem;
-  width: 14px;
+  font-size: 0.4rem;
+  width: 13px;
   text-align: center;
 }
 
@@ -472,13 +475,13 @@ h1 {
 }
 
 .calendar-day-inline {
-  width: 14px;
-  height: 14px;
+  width: 13px;
+  height: 13px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 3px;
-  font-size: 0.44rem;
+  font-size: 0.4rem;
   cursor: pointer;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid transparent;
