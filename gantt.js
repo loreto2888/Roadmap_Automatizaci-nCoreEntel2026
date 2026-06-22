@@ -222,7 +222,7 @@ function renderTimelineHeader(payload) {
   let currentDate = new Date(payload.minDate);
   let totalWidth = 0;
 
-  const diasSemana = ["D", "L", "M", "M", "J", "V", "S"];
+  const diasSemana = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
 
   while (currentDate <= payload.maxDate) {
     const col = document.createElement("div");
@@ -238,12 +238,13 @@ function renderTimelineHeader(payload) {
     // Obtener mes abreviado
     const month = currentDate.toLocaleDateString("es-CL", { month: "short" });
     
-    // Obtener día de la semana del inicio (L, M, M, J, V, S, D)
-    const dayWeek = diasSemana[currentDate.getDay()];
+    // Obtener día de la semana del inicio
+    const dayWeekStart = diasSemana[currentDate.getDay()];
+    const dayWeekEnd = diasSemana[dateEnd.getDay()];
 
     col.innerHTML = `
       <div class="gantt-timeline-col-week">${dateStart}-${dayEnd} ${month}</div>
-      <div class="gantt-timeline-col-date">${dayWeek}</div>
+      <div class="gantt-timeline-col-date">${dayWeekStart} a ${dayWeekEnd}</div>
     `;
 
     header.appendChild(col);
