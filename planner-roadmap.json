@@ -601,6 +601,18 @@
           "priority": "Medium",
           "scope": "Splunk",
           "completed": false
+        },
+        {
+          "id": "SPLUNK-006",
+          "title": "Reporte Mundial futbol",
+          "owner": "A / M",
+          "start": "",
+          "pending": "",
+          "deposit": "Curso",
+          "status": "En curso",
+          "priority": "Medium",
+          "scope": "Splunk",
+          "completed": false
         }
       ]
     }
