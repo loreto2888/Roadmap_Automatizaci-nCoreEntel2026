@@ -56,7 +56,13 @@ function extractTaskCode(value) {
   return normalizeIdentifier(value).match(/\b[A-Z]+-\d+\b/)?.[0] || "";
 }
 
-function scopeFromTask(task, categoryDescriptions) {
+function scopeFromTask(task, categoryDescriptions, bucketName = "") {
+  const bucket = normalizeIdentifier(bucketName);
+  if (bucket.includes("INTELLICORE")) return "Intellicore";
+  if (bucket.includes("GESTION")) return "Gestion";
+  if (bucket.includes("SPLUNK")) return "Splunk";
+  if (bucket.includes("CONJUNTA")) return "Conjunta";
+
   const applied = task.appliedCategories || {};
   const activeCategories = Object.entries(applied)
     .filter(([, enabled]) => enabled)
@@ -172,7 +178,7 @@ async function main() {
 
   bucketTasks.forEach(({ bucket, tasks }) => {
     tasks.forEach((task) => {
-      const scope = scopeFromTask(task, categoryDescriptions);
+      const scope = scopeFromTask(task, categoryDescriptions, bucket.name);
       const lane = lanes.find((item) => item.key === scopeKeyFromLabel(scope));
       if (!lane) return;
 
