@@ -458,6 +458,25 @@ function setupScrollSync() {
   }
 }
 
+function resetGanttScroll() {
+  const leftPanel = document.getElementById("ganttRowsLeft");
+  const rightPanel = document.getElementById("ganttRowsContainer");
+  const timelineHeader = document.getElementById("ganttTimelineHeader");
+  const bottomScroll = document.getElementById("ganttHorizontalScroll");
+  const svg = document.getElementById("ganttDependencies");
+
+  if (leftPanel) leftPanel.scrollTop = 0;
+  if (rightPanel) {
+    rightPanel.scrollTop = 0;
+    rightPanel.scrollLeft = 0;
+  }
+  if (timelineHeader) timelineHeader.scrollLeft = 0;
+  if (bottomScroll) bottomScroll.scrollLeft = 0;
+  if (svg && rightPanel) {
+    svg.style.transform = `translate(${0}px, ${0}px)`;
+  }
+}
+
 // ============= Zoom Controls =============
 function setupZoomControls(payload) {
   const zoomInBtn = document.getElementById("zoomIn");
@@ -1029,6 +1048,10 @@ function syncCalendarToCurrentMonth() {
 }
 
 // ============= Initialize =============
+if ("scrollRestoration" in history) {
+  history.scrollRestoration = "manual";
+}
+
 (async () => {
   const tasks = await loadRoadmapData();
   const payload = withSchedule(tasks);
@@ -1054,5 +1077,6 @@ function syncCalendarToCurrentMonth() {
   renderCalendar();
   hookDownload(payload);
   setUpdatedDate();
+  requestAnimationFrame(resetGanttScroll);
   window.setInterval(syncCalendarToCurrentMonth, 60000);
 })();
