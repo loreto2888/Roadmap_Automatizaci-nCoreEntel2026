@@ -516,10 +516,10 @@ let roadmap = [
         start: "08-06-2026",
         pending: "26-06-2026",
         deposit: "Pendiente",
-        status: "No iniciado",
+        status: "Completa",
         priority: "Medium",
         scope: "Gestion",
-        completed: false,
+        completed: true,
       },
       {
         id: "GESTION-002",
@@ -547,11 +547,11 @@ let roadmap = [
         owner: "Jorge Bourguet B.",
         start: "12-06-2026",
         pending: "",
-        deposit: "Cierre",
-        status: "Completa",
+        deposit: "Curso",
+        status: "En curso",
         priority: "Medium",
         scope: "Splunk",
-        completed: true,
+        completed: false,
       },
       {
         id: "SPLUNK-002",
@@ -559,11 +559,11 @@ let roadmap = [
         owner: "A / M / J",
         start: "19-05-2026",
         pending: "",
-        deposit: "Cierre",
-        status: "Completa",
+        deposit: "Curso",
+        status: "En curso",
         priority: "Medium",
         scope: "Splunk",
-        completed: true,
+        completed: false,
       },
       {
         id: "SPLUNK-003",
@@ -571,11 +571,11 @@ let roadmap = [
         owner: "A / M / J",
         start: "25-05-2026",
         pending: "",
-        deposit: "Cierre",
-        status: "Completa",
+        deposit: "Curso",
+        status: "En curso",
         priority: "Medium",
         scope: "Splunk",
-        completed: true,
+        completed: false,
       },
       {
         id: "SPLUNK-004",
@@ -710,10 +710,14 @@ const inProgressCount = document.getElementById("inProgressCount");
 const closingCount = document.getElementById("closingCount");
 const progressChart = document.getElementById("progressChart");
 const chartPercent = document.getElementById("chartPercent");
+const chartNames = document.getElementById("chartNames");
 const chips = Array.from(document.querySelectorAll(".chip"));
 const autoAdvance = document.getElementById("autoAdvance");
 const statusDonut = document.getElementById("statusDonut");
+const donutCenterPercent = document.getElementById("donutCenterPercent");
+const donutLabels = document.getElementById("donutLabels");
 const statusChartLabel = document.getElementById("statusChartLabel");
+const chartLegend = document.getElementById("chartLegend");
 const scopeBars = document.getElementById("scopeBars");
 const scopeChartLabel = document.getElementById("scopeChartLabel");
 const planningRange = document.getElementById("planningRange");
@@ -753,6 +757,48 @@ function getAllTasks() {
 }
 
 const scopeLegend = scopeDefinitions.map(({ key, label }) => ({ key, label }));
+const scopeColors = {
+  entel: "#67a9df",
+  intellicore: "#e4580d",
+  gestion: "#d96fd3",
+  splunk: "#9dc77b",
+  conjunta: "#ccb96a",
+};
+
+function renderChartLegend() {
+  if (!chartLegend) return;
+  chartLegend.innerHTML = scopeLegend
+    .map(
+      (scope) => `
+        <span class="chart-legend-item" title="${scope.label}">
+          <span class="chart-legend-dot" style="background-color: ${scopeColors[scope.key] || "#fff"};"></span>
+          <span class="chart-legend-label">${scope.label}</span>
+        </span>
+      `
+    )
+    .join("");
+}
+
+function renderChartNames() {
+  if (!chartNames) return;
+
+  chartNames.innerHTML = "";
+}
+
+function renderDonutLabels() {
+  if (!donutLabels) return;
+
+  donutLabels.innerHTML = scopeLegend
+    .map(
+      (scope) => `
+        <span class="donut-label donut-label-${scope.key}">
+          <span class="donut-label-dot" style="background-color: ${scopeColors[scope.key] || "#fff"};"></span>
+          <span class="donut-label-text">${scope.label}</span>
+        </span>
+      `
+    )
+    .join("");
+}
 
 function formatClock(date) {
   return date.toLocaleTimeString("es-ES", { hour12: false });
@@ -981,9 +1027,9 @@ function getVisibleTasks() {
 
 async function loadPlannerRoadmap() {
   const sources = [
-    "/api/planner/roadmap?t=" + Date.now(),
     "./planner-roadmap.json?t=" + Date.now(),
     "/planner-roadmap.json?t=" + Date.now(),
+    "/api/planner/roadmap?t=" + Date.now(),
   ];
 
   for (const source of sources) {
@@ -1042,6 +1088,10 @@ function updateCharts(visible, percent) {
     statusDonut.style.background = `conic-gradient(var(--accent-2) ${degrees}deg, rgba(255, 255, 255, 0.1) ${degrees}deg 360deg)`;
   }
 
+  if (donutCenterPercent) {
+    donutCenterPercent.textContent = `${percent}%`;
+  }
+
   if (statusChartLabel) {
     statusChartLabel.textContent = `${percent}% cierre`;
   }
@@ -1058,6 +1108,19 @@ function updateCharts(visible, percent) {
     if (counts[task.scopeKey] !== undefined) counts[task.scopeKey] += 1;
   });
 
+  const totalVisible = Math.max(1, visible.length);
+  scopeLegend.forEach((scope) => {
+    const label = donutLabels?.querySelector(`.donut-label-${scope.key}`);
+    if (!label) return;
+
+    const percentNode = label.querySelector(".donut-label-percent");
+    if (percentNode) {
+      const percentValue = Math.round((counts[scope.key] / totalVisible) * 100);
+      percentNode.textContent = `${percentValue}%`;
+      percentNode.style.backgroundColor = scopeColors[scope.key] || "#fff";
+    }
+  });
+
   const maxCount = Math.max(1, ...Object.values(counts));
   scopeLegend.forEach((scope) => {
     const row = scopeBars?.querySelector(`.scope-bar[data-scope-key="${scope.key}"]`);
@@ -1071,6 +1134,21 @@ function updateCharts(visible, percent) {
     if (value) value.textContent = String(count);
     if (fill) fill.style.width = `${width}%`;
   });
+
+  if (donutLabels) {
+    const totalVisible = Math.max(1, visible.length);
+    scopeLegend.forEach((scope) => {
+      const label = donutLabels.querySelector(`.donut-label-${scope.key}`);
+      if (!label) return;
+
+      const percentNode = label.querySelector(".donut-label-percent");
+      if (percentNode) {
+        const percentValue = Math.round((counts[scope.key] / totalVisible) * 100);
+        percentNode.textContent = `${percentValue}%`;
+        percentNode.style.backgroundColor = scopeColors[scope.key] || "#fff";
+      }
+    });
+  }
 
   if (scopeChartLabel) {
     scopeChartLabel.textContent = `${visible.length} tareas`;
@@ -1393,6 +1471,7 @@ function updateBreakdown(scopeTotals) {
   Object.entries(scopeTotals).forEach(([scope, data]) => {
     const pending = data.total - data.completed;
     if (data.total === 0) return;
+    const percent = Math.round((data.completed / data.total) * 100);
     
     const row = document.createElement("div");
     row.className = "breakdown-row";
@@ -1407,7 +1486,7 @@ function updateBreakdown(scopeTotals) {
     
     const count = document.createElement("div");
     count.className = "breakdown-count";
-    count.innerHTML = `<strong>${pending}</strong> sin hacer`;
+    count.innerHTML = `<strong>${data.completed}</strong> realizadas <span class="breakdown-separator">·</span> <strong>${pending}</strong> pendientes <span class="breakdown-separator">·</span> total <strong>${data.total}</strong> <span class="breakdown-percent" style="background-color: ${scopeColors[scope] || "#fff"};">${percent}%</span>`;
     
     row.appendChild(dot);
     row.appendChild(label);
@@ -1747,6 +1826,8 @@ sendWebhook?.addEventListener("click", () => {
 });
 
 roadmap = [];
+renderChartLegend();
+renderDonutLabels();
 renderRoadmap();
 ensureScopeBars();
 updateStats();
@@ -1771,8 +1852,6 @@ startLivePulse();
       updateDependencies(loaded.dependencies);
     }
   }
-
-  startPlannerAutoSync();
 })();
 
 window.setInterval(updateStats, 1000);

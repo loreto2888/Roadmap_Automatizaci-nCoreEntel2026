@@ -15,9 +15,16 @@ Accesos rápidos al proyecto:
 
 ## Sincronización con Planner
 - La fuente de verdad del roadmap vive en Planner/Teams.
-- El dashboard y la carta Gantt consumen primero la API local `/api/planner/roadmap` cuando el proyecto se ejecuta con `npm start`.
-- En GitHub Pages, el workflow de despliegue genera `planner-roadmap.json` desde Planner y la UI lo usa como snapshot estático.
-- Si la API no está disponible, la vista usa el respaldo guardado en `localStorage`.
+- El dashboard carga primero `planner-roadmap.json` como snapshot publicado para mantener estable la vista.
+- La API local `/api/planner/roadmap` sigue disponible para lectura directa desde Planner cuando el servidor está activo.
+- En GitHub Pages, el workflow de despliegue genera `planner-roadmap.json` desde Planner y la UI lo usa como base principal.
+- Cualquier cambio hecho en Planner/Teams debe reflejarse en el siguiente snapshot o sincronización.
+
+## Vista del dashboard
+- La dona muestra el porcentaje de cierre global en el centro.
+- El desglose por frente muestra realizadas, pendientes, total y el porcentaje final por cada frente.
+- La leyenda y los colores del dashboard mantienen la asociación visual por frente.
+- El layout es responsive para evitar desbordes laterales en pantallas medias y chicas.
 
 ### Secrets requeridos para Pages
 - `MS_TENANT_ID`

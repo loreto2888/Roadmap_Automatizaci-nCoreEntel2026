@@ -120,11 +120,11 @@
           "owner": "Johanna B.",
           "start": "04-05-2026",
           "pending": "",
-          "deposit": "Cierre",
-          "status": "Completa",
+          "deposit": "Curso",
+          "status": "En curso",
           "priority": "Medium",
           "scope": "Entel",
-          "completed": true
+          "completed": false
         },
         {
           "id": "ENTEL-011",
@@ -132,8 +132,8 @@
           "owner": "Johanna B.",
           "start": "08-06-2026",
           "pending": "19-06-2026",
-          "deposit": "Revision",
-          "status": "No iniciado",
+          "deposit": "Curso",
+          "status": "En curso",
           "priority": "Urgent",
           "scope": "Entel",
           "completed": false
@@ -227,12 +227,12 @@
           "title": "Entregar Responsables Técnicos por Plataforma",
           "owner": "Johanna B.",
           "start": "18-05-2026",
-          "pending": "05-06-2026",
-          "deposit": "Curso",
-          "status": "En curso",
+          "pending": "",
+          "deposit": "Cierre",
+          "status": "Completa",
           "priority": "Medium",
           "scope": "Entel",
-          "completed": false
+          "completed": true
         },
         {
           "id": "ENTEL-020",
@@ -517,10 +517,10 @@
           "start": "08-06-2026",
           "pending": "26-06-2026",
           "deposit": "Pendiente",
-          "status": "No iniciado",
+          "status": "Completa",
           "priority": "Medium",
           "scope": "Gestion",
-          "completed": false
+          "completed": true
         },
         {
           "id": "GESTION-002",

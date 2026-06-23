@@ -1,3 +1,30 @@
+.chart-names {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 8px;
+  max-width: 160px;
+}
+
+.chart-name {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text);
+  font-size: 0.62rem;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.chart-name-entel { border: 1px solid rgba(103, 169, 223, 0.45); }
+.chart-name-intellicore { border: 1px solid rgba(228, 88, 13, 0.45); }
+.chart-name-gestion { border: 1px solid rgba(217, 111, 211, 0.45); }
+.chart-name-splunk { border: 1px solid rgba(157, 199, 123, 0.45); }
+.chart-name-conjunta { border: 1px solid rgba(204, 185, 106, 0.45); }
 :root {
   color-scheme: dark;
   --bg: #08111f;
@@ -729,6 +756,126 @@ h1 {
   font-family: "Space Grotesk", sans-serif;
 }
 
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  margin-bottom: 12px;
+}
+
+.chart-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  color: var(--text);
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+
+.chart-legend-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+}
+
+.donut-stage {
+  position: relative;
+  width: min(300px, 100%);
+  height: min(300px, 100%);
+  margin: 0 auto;
+  overflow: visible;
+  display: grid;
+  place-items: center;
+}
+
+.donut-stage .donut {
+  width: 220px;
+  height: 220px;
+}
+
+.donut-center {
+  position: absolute;
+  inset: 50% auto auto 50%;
+  transform: translate(-50%, -50%);
+  display: grid;
+  place-items: center;
+  gap: 2px;
+  text-align: center;
+  pointer-events: none;
+}
+
+.donut-center strong {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1.8rem;
+  line-height: 1;
+  color: var(--text);
+}
+
+.donut-center small {
+  font-size: 0.72rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.donut-labels {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.donut-label {
+  position: absolute;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(10, 18, 32, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--text);
+  font-size: 0.68rem;
+  white-space: nowrap;
+  transform: translate(-50%, -50%);
+}
+
+.donut-label-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex: 0 0 auto;
+}
+
+.donut-label-percent {
+  display: none;
+}
+
+.breakdown-percent {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  margin-left: 10px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #07111f;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.22);
+}
+
+.donut-label-entel { top: 14%; left: 88%; }
+.donut-label-intellicore { top: 76%; left: 83%; }
+.donut-label-gestion { top: 92%; left: 50%; }
+.donut-label-splunk { top: 76%; left: 17%; }
+.donut-label-conjunta { top: 14%; left: 12%; }
+
 .donut {
   width: 94px;
   height: 94px;
@@ -1000,17 +1147,18 @@ h1 {
 
 .chart-wrapper {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 32px;
   align-items: center;
   width: 100%;
-  max-width: 600px;
+  max-width: 100%;
+  min-width: 0;
 }
 
 .chart-container {
   position: relative;
-  width: 220px;
-  height: 220px;
+  width: min(220px, 100%);
+  height: min(220px, 100vw);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1086,8 +1234,19 @@ h1 {
 }
 
 .breakdown-count {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  flex-wrap: nowrap;
   color: var(--muted);
   font-size: 0.8rem;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.breakdown-separator {
+  opacity: 0.55;
 }
 
 .dependencies-section {
@@ -1265,6 +1424,12 @@ h1 {
 
   .timeline-track {
     height: 260px;
+  }
+
+  .chart-wrapper {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    gap: 18px;
   }
 }
 

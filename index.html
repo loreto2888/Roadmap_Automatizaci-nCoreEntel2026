@@ -71,11 +71,12 @@
             <div class="chart-label">
               <strong id="chartPercent">0%</strong>
               <small>completado</small>
+              <div class="chart-names" id="chartNames" aria-hidden="true"></div>
             </div>
           </div>
           
           <div class="chart-breakdown">
-            <div class="breakdown-title">Desglose por frente</div>
+            <div class="breakdown-title">Desglose tareas Automatización Core Entel</div>
             <div class="breakdown-rows" id="breakdownRows"></div>
             
             <div class="dependencies-section" id="dependenciesSection" style="display: none; margin-top: 16px; border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 12px;">
@@ -168,7 +169,14 @@
                 <p>Estado actual</p>
                 <strong id="statusChartLabel">0% cierre</strong>
               </div>
-              <div class="donut" id="statusDonut" role="img" aria-label="Porcentaje de tareas cerradas"></div>
+              <div class="donut-stage">
+                <div class="donut" id="statusDonut" role="img" aria-label="Porcentaje de tareas cerradas"></div>
+                <div class="donut-center" id="donutCenter" aria-hidden="true">
+                  <strong id="donutCenterPercent">0%</strong>
+                  <small>cierre</small>
+                </div>
+                <div class="donut-labels" id="donutLabels" aria-hidden="true"></div>
+              </div>
             </section>
 
             <section class="chart-card">
@@ -176,6 +184,7 @@
                 <p>Por etiqueta</p>
                 <strong id="scopeChartLabel">0 tareas</strong>
               </div>
+              <div class="chart-legend" id="chartLegend" aria-label="Leyenda de colores"></div>
               <div class="scope-bars" id="scopeBars"></div>
             </section>
           </div>
