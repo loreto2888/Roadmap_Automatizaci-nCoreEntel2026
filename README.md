@@ -6,6 +6,13 @@ Accesos rápidos al proyecto:
 - Carta Gantt: https://loreto2888.github.io/Roadmap_Automatizaci-nCoreEntel2026/gantt.html
 - Dashboard: https://loreto2888.github.io/Roadmap_Automatizaci-nCoreEntel2026/
 
+## Para compartir
+Si quieres que otras personas vean el roadmap, comparte este enlace del dashboard:
+- [Abrir dashboard público](https://loreto2888.github.io/Roadmap_Automatizaci-nCoreEntel2026/)
+
+También está disponible la vista de Carta Gantt:
+- [Abrir Carta Gantt pública](https://loreto2888.github.io/Roadmap_Automatizaci-nCoreEntel2026/gantt.html)
+
 ## Version local
 - Carta Gantt: gantt.html
 - Dashboard: index.html
