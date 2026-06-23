@@ -1221,8 +1221,17 @@ h1 {
 .breakdown-count {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  flex-wrap: nowrap;
   color: var(--muted);
   font-size: 0.8rem;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.breakdown-separator {
+  opacity: 0.55;
 }
 
 .dependencies-section {
