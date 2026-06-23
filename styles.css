@@ -855,21 +855,6 @@ h1 {
   display: none;
 }
 
-.breakdown-percent {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 44px;
-  margin-left: 10px;
-  padding: 2px 8px;
-  border-radius: 999px;
-  font-size: 0.72rem;
-  font-weight: 800;
-  color: #07111f;
-  border: 1px solid rgba(255, 255, 255, 0.18);
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.22);
-}
-
 .donut-label-entel { top: 14%; left: 88%; }
 .donut-label-intellicore { top: 76%; left: 83%; }
 .donut-label-gestion { top: 92%; left: 50%; }
@@ -1236,17 +1221,8 @@ h1 {
 .breakdown-count {
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  gap: 6px;
-  flex-wrap: nowrap;
   color: var(--muted);
   font-size: 0.8rem;
-  text-align: right;
-  white-space: nowrap;
-}
-
-.breakdown-separator {
-  opacity: 0.55;
 }
 
 .dependencies-section {

@@ -1471,7 +1471,6 @@ function updateBreakdown(scopeTotals) {
   Object.entries(scopeTotals).forEach(([scope, data]) => {
     const pending = data.total - data.completed;
     if (data.total === 0) return;
-    const percent = Math.round((data.completed / data.total) * 100);
     
     const row = document.createElement("div");
     row.className = "breakdown-row";
@@ -1486,7 +1485,7 @@ function updateBreakdown(scopeTotals) {
     
     const count = document.createElement("div");
     count.className = "breakdown-count";
-    count.innerHTML = `<strong>${data.completed}</strong> realizadas <span class="breakdown-separator">·</span> <strong>${pending}</strong> pendientes <span class="breakdown-separator">·</span> total <strong>${data.total}</strong> <span class="breakdown-percent" style="background-color: ${scopeColors[scope] || "#fff"};">${percent}%</span>`;
+    count.innerHTML = `<strong>${pending}</strong> sin hacer`;
     
     row.appendChild(dot);
     row.appendChild(label);
