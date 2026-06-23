@@ -1,5 +1,7 @@
 # Checklist Final: GitHub + Teams Planner (Power Automate)
 
+> Checklist heredado. La ruta activa ahora exporta desde Planner con `.github/workflows/static.yml` y `.github/scripts/export-planner-roadmap.js`.
+
 ## Estado actual
 ✅ GitHub Actions Workflow creado: `.github/workflows/planner-sync-webhook.yml`
 ✅ Guía Power Automate: `POWER_AUTOMATE_SETUP.md`
@@ -92,7 +94,7 @@ git push
 ---
 
 ## Archivos criados en tu repo
-- `.github/workflows/planner-sync-webhook.yml` → Llama el webhook
+- `.github/workflows/planner-sync-webhook.yml` → Flujo heredado de webhook
 - `POWER_AUTOMATE_SETUP.md` → Guía paso a paso del flujo
 - `PLANNER_GITHUB_SETUP.md` → Guía antigua (opcional, no usar)
 - `.github/workflows/planner-sync.yml` → Antigua (optional, puedes borrar)

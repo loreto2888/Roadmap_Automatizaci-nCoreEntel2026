@@ -1,11 +1,11 @@
-# Integracion Git Push -> Planner (Teams)
+## Integracion Planner -> Roadmap
 
-Este proyecto ya incluye:
+Este proyecto ya incluye una sincronizacion que parte de Planner/Teams y construye el roadmap visible en la UI:
 
-- Workflow: `.github/workflows/planner-sync.yml`
-- Script: `.github/scripts/planner-sync.js`
+- Workflow: `.github/workflows/static.yml`
+- Script: `.github/scripts/export-planner-roadmap.js`
 
-Cada `git push` ejecuta GitHub Actions y crea o actualiza una tarea en Planner.
+Cada `git push` a `main` reconstruye `planner-roadmap.json` desde Planner para mantener la UI alineada con Teams.
 
 ## 1) Crear App Registration en Azure
 
@@ -47,7 +47,7 @@ Crea:
 
 ### Para GitHub Pages
 
-El workflow de despliegue estático genera un snapshot `planner-roadmap.json` usando estos secrets:
+El workflow de despliegue estático genera un snapshot `planner-roadmap.json` usando estos secrets y lee el contenido desde Planner:
 
 - `MS_TENANT_ID`
 - `MS_CLIENT_ID`

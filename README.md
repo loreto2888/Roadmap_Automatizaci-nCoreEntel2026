@@ -14,9 +14,10 @@ Accesos rápidos al proyecto:
 - La Carta Gantt permite descargar un archivo Excel con hojas separadas: Roadmap, Resumen y Gantt.
 
 ## Sincronización con Planner
-- El dashboard y la carta Gantt consumen el roadmap desde la API local `/api/planner/roadmap` cuando el proyecto se ejecuta con `npm start`.
+- La fuente de verdad del roadmap vive en Planner/Teams.
+- El dashboard y la carta Gantt consumen primero la API local `/api/planner/roadmap` cuando el proyecto se ejecuta con `npm start`.
+- En GitHub Pages, el workflow de despliegue genera `planner-roadmap.json` desde Planner y la UI lo usa como snapshot estático.
 - Si la API no está disponible, la vista usa el respaldo guardado en `localStorage`.
-- En GitHub Pages, el workflow de despliegue genera `planner-roadmap.json` y la UI lo usa como snapshot estático.
 
 ### Secrets requeridos para Pages
 - `MS_TENANT_ID`

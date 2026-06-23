@@ -65,8 +65,9 @@ function flattenRoadmap(roadmap) {
 
 async function loadRoadmapData() {
   const sources = [
-    `/planner-roadmap.json?t=${Date.now()}`,
     `/api/planner/roadmap?t=${Date.now()}`,
+    `./planner-roadmap.json?t=${Date.now()}`,
+    `/planner-roadmap.json?t=${Date.now()}`,
   ];
 
   for (const source of sources) {

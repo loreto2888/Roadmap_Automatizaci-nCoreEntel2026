@@ -969,8 +969,9 @@ function getVisibleTasks() {
 
 async function loadPlannerRoadmap() {
   const sources = [
-    "/planner-roadmap.json?t=" + Date.now(),
     "/api/planner/roadmap?t=" + Date.now(),
+    "./planner-roadmap.json?t=" + Date.now(),
+    "/planner-roadmap.json?t=" + Date.now(),
   ];
 
   for (const source of sources) {
@@ -1733,6 +1734,7 @@ sendWebhook?.addEventListener("click", () => {
   sendAlertsToTeams(getVisibleTasks());
 });
 
+roadmap = [];
 renderRoadmap();
 ensureScopeBars();
 updateStats();

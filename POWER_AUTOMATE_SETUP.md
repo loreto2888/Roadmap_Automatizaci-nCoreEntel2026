@@ -1,5 +1,7 @@
 # Setup Power Automate Webhook para GitHub → Planner
 
+> Ruta heredada. La sincronizacion activa del proyecto parte del roadmap local y se ejecuta desde `.github/workflows/static.yml`.
+
 Este flujo reemplaza completamente la dependencia de Entra ID y corre automáticamente cuando haces push desde GitHub.
 
 ## Flujo sin código - Paso a paso visual
