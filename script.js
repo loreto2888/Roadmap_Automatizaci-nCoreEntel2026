@@ -1485,7 +1485,7 @@ function updateBreakdown(scopeTotals) {
     
     const count = document.createElement("div");
     count.className = "breakdown-count";
-    count.innerHTML = `<strong>${pending}</strong> pendientes <span class="breakdown-separator">·</span> total <strong>${data.total}</strong>`;
+    count.innerHTML = `<strong>${pending}</strong> pendientes <span class="breakdown-separator">·</span> <strong>${data.completed}</strong> listos <span class="breakdown-separator">·</span> total <strong>${data.total}</strong>`;
     
     row.appendChild(dot);
     row.appendChild(label);
