@@ -1,40 +1,95 @@
-# Roadmap Automatizacion Core
+# Roadmap Automatizacion Core Entel 2026
 
-Accesos rápidos al proyecto:
+Dashboard y Carta Gantt del roadmap de Automatizacion Core, sincronizados con Microsoft Teams Planner cuando la API local o el workflow de GitHub Pages tienen acceso a Microsoft Graph.
 
-## Version pública
-- Carta Gantt: https://loreto2888.github.io/Roadmap_Automatizaci-nCoreEntel2026/gantt.html
+## Enlaces
+
+Version publica para compartir con el equipo:
+
 - Dashboard: https://loreto2888.github.io/Roadmap_Automatizaci-nCoreEntel2026/
+- Carta Gantt: https://loreto2888.github.io/Roadmap_Automatizaci-nCoreEntel2026/gantt.html
 
-## Para compartir
-Si quieres que otras personas vean el roadmap, comparte este enlace del dashboard:
-- [Abrir dashboard público](https://loreto2888.github.io/Roadmap_Automatizaci-nCoreEntel2026/)
+Version local para revisar cambios antes de publicar:
 
-También está disponible la vista de Carta Gantt:
-- [Abrir Carta Gantt pública](https://loreto2888.github.io/Roadmap_Automatizaci-nCoreEntel2026/gantt.html)
+- Dashboard: http://localhost:3000/
+- Carta Gantt: http://localhost:3000/gantt.html
 
-## Version local
-- Carta Gantt: gantt.html
-- Dashboard: index.html
+## Ejecutar localmente
 
-## Exportación
-- La Carta Gantt permite descargar un archivo Excel con hojas separadas: Roadmap, Resumen y Gantt.
+Instala dependencias una vez:
 
-## Sincronización con Planner
-- La fuente de verdad del roadmap vive en Planner/Teams.
-- El dashboard carga primero `planner-roadmap.json` como snapshot publicado para mantener estable la vista.
-- La API local `/api/planner/roadmap` sigue disponible para lectura directa desde Planner cuando el servidor está activo.
-- En GitHub Pages, el workflow de despliegue genera `planner-roadmap.json` desde Planner y la UI lo usa como base principal.
-- Cualquier cambio hecho en Planner/Teams debe reflejarse en el siguiente snapshot o sincronización.
+```bash
+npm install
+```
 
-## Vista del dashboard
-- La dona muestra el porcentaje de cierre global en el centro.
-- El desglose por frente muestra realizadas, pendientes, total y el porcentaje final por cada frente.
-- La leyenda y los colores del dashboard mantienen la asociación visual por frente.
-- El layout es responsive para evitar desbordes laterales en pantallas medias y chicas.
+Inicia el servidor local:
 
-### Secrets requeridos para Pages
+```bash
+npm start
+```
+
+El servidor publica los archivos estaticos y expone la API viva de Planner en:
+
+```text
+GET /api/planner/roadmap
+```
+
+Si Microsoft Graph pide autenticacion, la consola mostrara un codigo de dispositivo. Completa el login en:
+
+```text
+https://login.microsoft.com/device
+```
+
+## Sincronizacion con Teams Planner
+
+- Planner/Teams es la fuente principal de las tareas.
+- En local, el dashboard intenta leer primero `/api/planner/roadmap` para reflejar cambios vivos de Planner.
+- Si la API viva no responde o falta autenticacion, la UI usa `planner-roadmap.json` como respaldo.
+- En GitHub Pages no existe servidor Node, por eso la web publica usa el snapshot `planner-roadmap.json` generado por el workflow.
+- El workflow de Pages no bloquea el despliegue si falla la exportacion de Planner; en ese caso publica usando el snapshot existente.
+
+## Conteos por frente
+
+Los frentes se agrupan por el prefijo real del ID de la tarea:
+
+- `ENTEL-`
+- `INTELLICORE-`
+- `CONJUNTA-`
+- `SPLUNK-`
+- `GESTION-`
+
+El dashboard muestra por frente:
+
+- Sin hacer
+- Listo
+- Cantidad total
+- Porcentaje de completitud
+
+## Carta Gantt
+
+- La Carta Gantt muestra tareas bajo semanas calendario alineadas con sus fechas de inicio y fin.
+- El encabezado semanal usa semanas de lunes a viernes para lectura visual.
+- Las barras se calculan con semanas reales de 7 dias para mantener la posicion correcta bajo cada semana.
+- La vista permite descargar un Excel con hojas de Roadmap, Resumen y Gantt.
+
+## Despliegue en GitHub Pages
+
+Cada push a `main` ejecuta `.github/workflows/static.yml` y publica la web en GitHub Pages.
+
+Secrets recomendados para regenerar el snapshot desde Planner:
+
 - `MS_TENANT_ID`
 - `MS_CLIENT_ID`
 - `MS_CLIENT_SECRET`
 - `PLANNER_PLAN_ID`
+
+Si alguno falta o falla, Pages igual despliega la version estatica con el ultimo `planner-roadmap.json` disponible.
+
+## Validaciones rapidas
+
+```bash
+node --check script.js
+node --check gantt.js
+node --check server.js
+node --check .github/scripts/export-planner-roadmap.js
+```
