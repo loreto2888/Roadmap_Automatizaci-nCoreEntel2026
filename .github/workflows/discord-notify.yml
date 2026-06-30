@@ -17,8 +17,8 @@ jobs:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
         run: |
           if [ -z "$DISCORD_WEBHOOK" ]; then
-            echo "::error::Missing DISCORD_WEBHOOK_URL secret"
-            exit 1
+            echo "DISCORD_WEBHOOK_URL secret is not configured; skipping notification."
+            exit 0
           fi
 
           repo="${GITHUB_REPOSITORY}"

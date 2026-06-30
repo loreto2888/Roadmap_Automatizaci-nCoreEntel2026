@@ -36,6 +36,7 @@ jobs:
         with:
           node-version: 20
       - name: Export Planner roadmap snapshot
+        continue-on-error: true
         env:
           MS_TENANT_ID: ${{ secrets.MS_TENANT_ID }}
           MS_CLIENT_ID: ${{ secrets.MS_CLIENT_ID }}
