@@ -16,6 +16,14 @@ function daysBetween(a, b) {
   return Math.max(1, Math.ceil(ms / (1000 * 60 * 60 * 24)));
 }
 
+function dayOffset(a, b) {
+  const start = new Date(a);
+  const end = new Date(b);
+  start.setHours(0, 0, 0, 0);
+  end.setHours(0, 0, 0, 0);
+  return Math.floor((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+}
+
 function normalizeScope(scope) {
   const text = (scope || "").toLowerCase();
   if (text.includes("entel")) return "entel";
@@ -188,7 +196,7 @@ function renderRows(payload) {
 let zoomLevel = 1;
 const MIN_ZOOM = 0.5;
 const MAX_ZOOM = 3;
-const DAYS_PER_COL = 5;
+const DAYS_PER_COL = 7;
 
 function getColWidthPx() {
   return 80 * zoomLevel;
@@ -261,13 +269,9 @@ function renderTimelineHeader(payload) {
   const colWidthPx = getColWidthPx();
   const colWidthDays = getColWidthDays();
 
-  let currentDate = new Date(payload.minDate);
-  // Ajustar a lunes más próximo
-  const dayOfWeek = currentDate.getDay();
-  if (dayOfWeek !== 1) {
-    const daysToAdd = dayOfWeek === 0 ? 1 : (1 - dayOfWeek + 7) % 7;
-    currentDate.setDate(currentDate.getDate() + daysToAdd);
-  }
+  const timelineStart = startOfMonday(payload.minDate);
+  payload.timelineStart = timelineStart;
+  let currentDate = new Date(timelineStart);
   
   let totalWidth = 0;
 
@@ -285,7 +289,11 @@ function renderTimelineHeader(payload) {
     const dayEnd = dateEnd.getDate();
     
     // Obtener mes abreviado
-    const month = currentDate.toLocaleDateString("es-CL", { month: "short" });
+    const monthStart = currentDate.toLocaleDateString("es-CL", { month: "short" });
+    const monthEnd = dateEnd.toLocaleDateString("es-CL", { month: "short" });
+    const weekLabel = currentDate.getMonth() === dateEnd.getMonth()
+      ? `${dateStart}-${dayEnd} ${monthStart}`
+      : `${dateStart} ${monthStart}-${dayEnd} ${monthEnd}`;
     
     // Generar rango de abreviaturas de días (L M M J V)
     let daysLabel = "";
@@ -296,7 +304,7 @@ function renderTimelineHeader(payload) {
     daysLabel = daysLabel.trim();
 
     col.innerHTML = `
-      <div class="gantt-timeline-col-week">${dateStart}-${dayEnd} ${month}</div>
+      <div class="gantt-timeline-col-week">${weekLabel}</div>
       <div class="gantt-timeline-col-date">${daysLabel}</div>
     `;
 
@@ -331,6 +339,7 @@ function renderGanttRows(payload) {
   const colWidthDays = getColWidthDays();
   const now = new Date();
   const timelineWidth = payload.timelineWidth || Math.max(1200, payload.spanDays * colWidthPx / (colWidthDays || 1));
+  const timelineStart = payload.timelineStart || startOfMonday(payload.minDate);
 
   const timelineTrack = document.createElement("div");
   timelineTrack.className = "gantt-timeline-track";
@@ -338,7 +347,7 @@ function renderGanttRows(payload) {
   timelineTrack.style.minWidth = `${timelineWidth}px`;
 
   // Add today line
-  const daysFromMin = daysBetween(payload.minDate, now) - 1;
+  const daysFromMin = dayOffset(timelineStart, now);
   const todayLeft = (daysFromMin / (colWidthDays || 1)) * colWidthPx;
   if (daysFromMin >= 0 && daysFromMin <= payload.spanDays) {
     const todayLine = document.createElement("div");
@@ -362,7 +371,7 @@ function renderGanttRows(payload) {
     barContainer.style.flex = "none";
 
     // Calculate bar position and width
-    const startOffset = daysBetween(payload.minDate, task.startDate) - 1;
+    const startOffset = dayOffset(timelineStart, task.startDate);
     const barLeft = (startOffset / (colWidthDays || 1)) * colWidthPx;
     const barWidth = (task.duration / (colWidthDays || 1)) * colWidthPx;
 
@@ -982,6 +991,7 @@ function renderDependencies(payload) {
 
   const colWidthPx = getColWidthPx();
   const colWidthDays = getColWidthDays();
+  const timelineStart = payload.timelineStart || startOfMonday(payload.minDate);
 
   // Create dependencies based on task indices
   for (let idx = 1; idx < payload.tasks.length; idx++) {
@@ -989,10 +999,10 @@ function renderDependencies(payload) {
     const currTask = payload.tasks[idx];
     
     // Get bar positions
-    const prevEndOffset = daysBetween(payload.minDate, prevTask.endDate) - 1;
+    const prevEndOffset = dayOffset(timelineStart, prevTask.endDate);
     const prevX = (prevEndOffset / (colWidthDays || 1)) * colWidthPx + 80;
 
-    const currStartOffset = daysBetween(payload.minDate, currTask.startDate) - 1;
+    const currStartOffset = dayOffset(timelineStart, currTask.startDate);
     const currX = (currStartOffset / (colWidthDays || 1)) * colWidthPx;
 
     const rowHeight = 50;
