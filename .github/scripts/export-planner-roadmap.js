@@ -57,6 +57,13 @@ function extractTaskCode(value) {
 }
 
 function scopeFromTask(task, categoryDescriptions, bucketName = "") {
+  const taskCode = extractTaskCode(`${task.title || ""} ${task.id || ""}`);
+  if (taskCode.startsWith("CONJUNTA-")) return "Conjunta";
+  if (taskCode.startsWith("ENTEL-")) return "Entel";
+  if (taskCode.startsWith("INTELLICORE-")) return "Intellicore";
+  if (taskCode.startsWith("SPLUNK-")) return "Splunk";
+  if (taskCode.startsWith("GESTION-")) return "Gestion";
+
   const bucket = normalizeIdentifier(bucketName);
   if (bucket.includes("INTELLICORE")) return "Intellicore";
   if (bucket.includes("GESTION")) return "Gestion";
@@ -70,7 +77,6 @@ function scopeFromTask(task, categoryDescriptions, bucketName = "") {
     .filter(Boolean);
 
   const haystack = normalizeIdentifier([task.title || "", ...activeCategories, task.id || ""].join(" "));
-  if (extractTaskCode(task.title || task.id).startsWith("GESTION-")) return "Gestion";
   if (haystack.includes("INTELLICORE")) return "Intellicore";
   if (haystack.includes("SPLUNK") || haystack.includes("DPLINK")) return "Splunk";
   if (haystack.includes("CONJUNTA") || haystack.includes("CONJUNTO")) return "Conjunta";

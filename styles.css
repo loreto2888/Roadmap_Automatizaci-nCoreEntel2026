@@ -1197,23 +1197,47 @@ h1 {
 
 .breakdown-row {
   display: grid;
-  grid-template-columns: 12px 1fr auto;
+  grid-template-columns: minmax(120px, 1.5fr) repeat(4, minmax(62px, 0.7fr));
   gap: 10px;
   align-items: center;
-  padding: 8px 10px;
+  padding: 10px 12px;
   border-radius: var(--radius-sm);
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.05);
   font-size: 0.85rem;
 }
 
+.breakdown-header {
+  background: rgba(57, 208, 194, 0.1);
+  border-color: rgba(57, 208, 194, 0.22);
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.breakdown-row > strong {
+  justify-self: end;
+  font-family: "Space Grotesk", sans-serif;
+  color: var(--text);
+}
+
+.breakdown-header > div:not(:first-child) {
+  justify-self: end;
+}
+
 .breakdown-dot {
   width: 12px;
   height: 12px;
   border-radius: 50%;
+  flex: 0 0 auto;
 }
 
 .breakdown-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   color: var(--text);
   font-weight: 500;
 }

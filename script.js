@@ -620,9 +620,9 @@ let roadmap = [
 const scopeDefinitions = [
   { key: "entel", label: "Entel", lane: "ENTEL", title: "Roadmap Entel", kicker: "Frente 01" },
   { key: "intellicore", label: "Intellicore", lane: "INTELLICORE", title: "Roadmap Intellicore", kicker: "Frente 02" },
-  { key: "gestion", label: "Gestion", lane: "GESTION", title: "Roadmap Gestion", kicker: "Frente 03" },
+  { key: "conjunta", label: "Conjunta", lane: "CONJUNTA", title: "Roadmap Conjunta", kicker: "Frente 03" },
   { key: "splunk", label: "Splunk", lane: "SPLUNK", title: "Roadmap Splunk", kicker: "Frente 04" },
-  { key: "conjunta", label: "Conjunta", lane: "CONJUNTA", title: "Roadmap Conjunta", kicker: "Frente 05" },
+  { key: "gestion", label: "Gestion", lane: "GESTION", title: "Roadmap Gestion", kicker: "Frente 05" },
 ];
 
 function normalizeIdentifier(value) {
@@ -651,7 +651,22 @@ function scopeLabelFromKey(scopeKey) {
   return scopeDefinitions.find((scope) => scope.key === scopeKey)?.label || "Entel";
 }
 
+function scopeKeyFromTaskPrefix(task) {
+  const code = extractTaskCode(`${task?.id || ""} ${task?.title || ""}`);
+  if (code.startsWith("CONJUNTA-")) return "conjunta";
+  if (code.startsWith("ENTEL-")) return "entel";
+  if (code.startsWith("INTELLICORE-")) return "intellicore";
+  if (code.startsWith("SPLUNK-")) return "splunk";
+  if (code.startsWith("GESTION-")) return "gestion";
+  return "";
+}
+
 function inferTaskScope(task) {
+  const prefixedScopeKey = scopeKeyFromTaskPrefix(task);
+  if (prefixedScopeKey) {
+    return scopeLabelFromKey(prefixedScopeKey);
+  }
+
   const explicitScopeKey = task.scope ? normalizedScopeKey(task.scope) : "";
   if (explicitScopeKey) {
     return scopeLabelFromKey(explicitScopeKey);
@@ -699,8 +714,11 @@ const timelineNode = document.getElementById("timelineNode");
 const timelineLabel = document.getElementById("timelineLabel");
 const overallPercent = document.getElementById("overallPercent");
 const closedCount = document.getElementById("closedCount");
+const totalTaskCount = document.getElementById("totalTaskCount");
 const remainingCount = document.getElementById("remainingCount");
 const lastUpdated = document.getElementById("lastUpdated");
+const plannerStatus = document.getElementById("plannerStatus");
+const plannerSourceLabel = document.getElementById("plannerSourceLabel");
 const riskCount = document.getElementById("riskCount");
 const riskOwner = document.getElementById("riskOwner");
 const currentDate = document.getElementById("currentDate");
@@ -744,6 +762,11 @@ let plannerSyncInFlight = false;
 let plannerSyncNotified = false;
 let plannerSyncLastMessage = "";
 let plannerSignature = "";
+let plannerSyncInfo = {
+  status: "Sincronizando",
+  source: "Esperando Planner",
+  updatedAt: null,
+};
 
 function getAllTasks() {
   return roadmap.flatMap((lane) =>
@@ -1025,29 +1048,59 @@ function getVisibleTasks() {
   return getAllTasks().filter((task) => matchesFilter(task, activeFilter));
 }
 
-async function loadPlannerRoadmap() {
-  const sources = [
-    "./planner-roadmap.json?t=" + Date.now(),
-    "/planner-roadmap.json?t=" + Date.now(),
-    "/api/planner/roadmap?t=" + Date.now(),
+async function loadPlannerRoadmap(preferLive = false, allowSnapshot = true) {
+  let liveWarning = "";
+  const liveSource = { url: "/api/planner/roadmap?t=" + Date.now(), label: "Teams Planner en vivo" };
+  const snapshotSources = [
+    { url: "./planner-roadmap.json?t=" + Date.now(), label: "Snapshot Teams Planner" },
+    { url: "/planner-roadmap.json?t=" + Date.now(), label: "Snapshot Teams Planner" },
   ];
+  const sources = preferLive
+    ? [liveSource, ...(allowSnapshot ? snapshotSources : [])]
+    : [...snapshotSources, liveSource];
 
   for (const source of sources) {
     try {
-      const response = await fetch(source, { cache: "no-store" });
-      if (!response.ok) continue;
+      const response = await fetch(source.url, { cache: "no-store" });
+      if (!response.ok) {
+        if (source.label === "Teams Planner en vivo") {
+          try {
+            const errorPayload = await response.json();
+            liveWarning = errorPayload.message || `Planner en vivo no disponible (${response.status})`;
+          } catch {
+            liveWarning = `Planner en vivo no disponible (${response.status})`;
+          }
+        }
+        continue;
+      }
 
       const payload = await response.json();
       const incomingRoadmap = sanitizeIncomingRoadmap(payload.roadmap);
       if (incomingRoadmap && incomingRoadmap.length > 0) {
-        return { roadmap: incomingRoadmap, dependencies: payload.dependencies || {} };
+        const isSnapshot = source.label.startsWith("Snapshot");
+        return {
+          roadmap: incomingRoadmap,
+          dependencies: payload.dependencies || {},
+          syncInfo: {
+            status: isSnapshot || payload.stale ? "Snapshot" : "Conectado",
+            source: liveWarning && isSnapshot ? `${source.label}: ${liveWarning}` : payload.stale ? `${source.label} (cache)` : source.label,
+            updatedAt: payload.fetchedAt || payload.generatedAt || new Date().toISOString(),
+            warning: payload.syncWarning || "",
+          },
+        };
       }
     } catch {
       // Try the next source.
     }
   }
 
-  return { roadmap: null, dependencies: null };
+  return {
+    roadmap: null,
+    dependencies: null,
+    syncInfo: liveWarning
+      ? { status: "Pendiente", source: liveWarning, updatedAt: new Date().toISOString() }
+      : null,
+  };
 }
 
 function ensureScopeBars() {
@@ -1305,9 +1358,15 @@ function updateStats() {
 
   if (overallPercent) overallPercent.textContent = `${percent}%`;
   if (closedCount) closedCount.textContent = `${closed}/${visible.length}`;
+  if (totalTaskCount) totalTaskCount.textContent = String(allTasks.length);
   if (remainingCount) remainingCount.textContent = `${globalRemaining}`;
   if (timelineLabel) timelineLabel.textContent = `${percent}% completado`;
-  if (lastUpdated) lastUpdated.textContent = formatClock(new Date());
+  if (plannerStatus) plannerStatus.textContent = plannerSyncInfo.status;
+  if (plannerSourceLabel) plannerSourceLabel.textContent = plannerSyncInfo.source;
+  if (lastUpdated) {
+    const updatedAt = plannerSyncInfo.updatedAt ? new Date(plannerSyncInfo.updatedAt) : new Date();
+    lastUpdated.textContent = `Actualizado ${formatClock(updatedAt)}`;
+  }
 
   const active = visible.filter((task) => !task.completed && task.deposit !== "Cierre").length;
   const inProgress = visible.filter((task) => task.status === "En curso").length;
@@ -1385,9 +1444,9 @@ function drawProgressChart() {
   const scopeTotals = {
     "Entel": { total: 0, completed: 0 },
     "Intellicore": { total: 0, completed: 0 },
-    "Gestion": { total: 0, completed: 0 },
     "Conjunta": { total: 0, completed: 0 },
-    "Splunk": { total: 0, completed: 0 }
+    "Splunk": { total: 0, completed: 0 },
+    "Gestion": { total: 0, completed: 0 }
   };
   
   allTasks.forEach((task) => {
@@ -1467,29 +1526,43 @@ function updateBreakdown(scopeTotals) {
   };
   
   breakdownRows.innerHTML = "";
+
+  const header = document.createElement("div");
+  header.className = "breakdown-row breakdown-header";
+  header.innerHTML = `
+    <div>PLANNER TEAMS</div>
+    <div>SIN HACER</div>
+    <div>LISTO</div>
+    <div>CANTIDAD</div>
+    <div>%</div>
+  `;
+  breakdownRows.appendChild(header);
   
   Object.entries(scopeTotals).forEach(([scope, data]) => {
     const pending = data.total - data.completed;
     if (data.total === 0) return;
+    const percent = Math.round((data.completed / data.total) * 100);
     
     const row = document.createElement("div");
     row.className = "breakdown-row";
-    
-    const dot = document.createElement("div");
-    dot.className = "breakdown-dot";
-    dot.style.backgroundColor = scopeColors[scope];
-    
+
     const label = document.createElement("div");
     label.className = "breakdown-label";
-    label.textContent = `${scope}`;
-    
-    const count = document.createElement("div");
-    count.className = "breakdown-count";
-    count.innerHTML = `<strong>${pending}</strong> pendientes <span class="breakdown-separator">·</span> <strong>${data.completed}</strong> listos <span class="breakdown-separator">·</span> total <strong>${data.total}</strong>`;
-    
-    row.appendChild(dot);
-    row.appendChild(label);
-    row.appendChild(count);
+    label.innerHTML = `<span class="breakdown-dot" style="background-color: ${scopeColors[scope]};"></span><span>${scope}</span>`;
+
+    const pendingCell = document.createElement("strong");
+    pendingCell.textContent = String(pending);
+
+    const completedCell = document.createElement("strong");
+    completedCell.textContent = String(data.completed);
+
+    const totalCell = document.createElement("strong");
+    totalCell.textContent = String(data.total);
+
+    const percentCell = document.createElement("strong");
+    percentCell.textContent = `${percent}%`;
+
+    row.append(label, pendingCell, completedCell, totalCell, percentCell);
     breakdownRows.appendChild(row);
   });
 }
@@ -1747,9 +1820,9 @@ async function syncFromPlannerApi() {
   plannerSyncInFlight = true;
 
   try {
-    const loaded = await loadPlannerRoadmap();
+    const loaded = await loadPlannerRoadmap(true, false);
     if (!loaded.roadmap || !loaded.roadmap.length) {
-      throw new Error("Sin tareas disponibles desde Planner");
+      throw new Error(loaded.syncInfo?.source || "Sin tareas disponibles desde Planner");
     }
 
     const nextSignature = JSON.stringify(loaded.roadmap);
@@ -1768,6 +1841,13 @@ async function syncFromPlannerApi() {
     if (loaded.dependencies) {
       updateDependencies(loaded.dependencies);
     }
+
+    plannerSyncInfo = loaded.syncInfo || {
+      status: "Conectado",
+      source: "Teams Planner",
+      updatedAt: new Date().toISOString(),
+    };
+    updateStats();
 
     if (plannerSyncLastMessage && plannerSyncLastMessage.startsWith("Planner")) {
       plannerSyncLastMessage = "";
@@ -1797,6 +1877,12 @@ async function syncFromPlannerApi() {
       plannerSyncLastMessage = message;
     }
     plannerSyncHealthy = false;
+    plannerSyncInfo = {
+      status: "Pendiente",
+      source: message,
+      updatedAt: new Date().toISOString(),
+    };
+    updateStats();
     console.warn("Planner sync error:", error);
   } finally {
     plannerSyncInFlight = false;
@@ -1807,7 +1893,7 @@ function startPlannerAutoSync() {
   syncFromPlannerApi();
   window.setInterval(() => {
     syncFromPlannerApi();
-  }, 30000);
+  }, 15000);
 }
 
 autoAdvance.addEventListener("change", startLivePulse);
@@ -1835,6 +1921,12 @@ startLivePulse();
 (async () => {
   const loaded = await loadPlannerRoadmap();
   if (loaded.roadmap) {
+    plannerSyncInfo = loaded.syncInfo || {
+      status: "Conectado",
+      source: "Teams Planner",
+      updatedAt: new Date().toISOString(),
+    };
+
     const nextSignature = JSON.stringify(loaded.roadmap);
     if (nextSignature !== plannerSignature) {
       roadmap = loaded.roadmap;
@@ -1852,5 +1944,7 @@ startLivePulse();
     }
   }
 })();
+
+startPlannerAutoSync();
 
 window.setInterval(updateStats, 1000);
