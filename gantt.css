@@ -10,6 +10,7 @@
   --gestion: #d96fd3;
   --splunk: #9dc77b;
   --conjunta: #ccb96a;
+  --gantt-row-height: 57px;
   font-family: "Manrope", sans-serif;
 }
 
@@ -202,6 +203,7 @@ h1 {
   grid-template-columns: minmax(150px, 0.88fr) 34px 78px 78px 96px 112px 110px;
   gap: 0;
   align-items: center;
+  height: 60px;
   padding: 9px 6px;
   font-size: 0.68rem;
   letter-spacing: 0.06em;
@@ -249,7 +251,7 @@ h1 {
   padding: 9px 6px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   font-size: 0.9rem;
-  min-height: 50px;
+  min-height: var(--gantt-row-height);
 }
 
 .gantt-row-left > span {
@@ -617,6 +619,10 @@ h1 {
   padding-left: 48px;
 }
 
+.gantt-rows-container .gantt-timeline-track {
+  flex-direction: column;
+}
+
 .gantt-timeline-track {
   position: relative;
   width: max-content;
@@ -647,7 +653,7 @@ h1 {
 .gantt-row-right {
   display: flex;
   align-items: center;
-  min-height: 50px;
+  min-height: var(--gantt-row-height);
   padding: 8px 4px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   position: relative;

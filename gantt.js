@@ -1005,7 +1005,7 @@ function renderDependencies(payload) {
     const currStartOffset = dayOffset(timelineStart, currTask.startDate);
     const currX = (currStartOffset / (colWidthDays || 1)) * colWidthPx;
 
-    const rowHeight = 50;
+    const rowHeight = 57;
     const prevY = idx * rowHeight + 25;
     const currY = (idx + 1) * rowHeight + 25;
 
