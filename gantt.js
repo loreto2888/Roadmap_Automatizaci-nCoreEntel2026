@@ -197,6 +197,7 @@ let zoomLevel = 1;
 const MIN_ZOOM = 0.5;
 const MAX_ZOOM = 3;
 const DAYS_PER_COL = 7;
+let activeGanttFilter = "all";
 
 function getColWidthPx() {
   return 80 * zoomLevel;
@@ -204,6 +205,42 @@ function getColWidthPx() {
 
 function getColWidthDays() {
   return DAYS_PER_COL;
+}
+
+function getFilteredPayload(payload) {
+  const tasks = payload.tasks.filter((task) => {
+    if (activeGanttFilter === "all") return true;
+    if (activeGanttFilter === "completed") return task.completed;
+    return task.scopeKey === activeGanttFilter;
+  });
+
+  return { ...payload, tasks };
+}
+
+function updateLegendFilterState() {
+  const buttons = document.querySelectorAll("[data-gantt-filter]");
+  const backButton = document.getElementById("ganttFilterBack");
+
+  buttons.forEach((button) => {
+    button.classList.toggle("active", button.dataset.ganttFilter === activeGanttFilter);
+  });
+
+  if (backButton) {
+    backButton.hidden = activeGanttFilter === "all";
+  }
+}
+
+function renderGanttView(payload, options = {}) {
+  const viewPayload = getFilteredPayload(payload);
+  renderLeftPanel(viewPayload);
+  renderTimelineHeader(viewPayload);
+  renderGanttRows(viewPayload);
+  renderDependencies(viewPayload);
+  updateLegendFilterState();
+
+  if (options.resetScroll !== false) {
+    requestAnimationFrame(resetGanttScroll);
+  }
 }
 
 // ============= Render Left Panel (Task List) =============
@@ -495,17 +532,32 @@ function setupZoomControls(payload) {
 
   zoomInBtn.addEventListener("click", () => {
     zoomLevel = Math.min(MAX_ZOOM, zoomLevel + 0.2);
-    renderTimelineHeader(payload);
-    renderGanttRows(payload);
-    renderDependencies(payload);
+    renderGanttView(payload, { resetScroll: false });
   });
 
   zoomOutBtn.addEventListener("click", () => {
     zoomLevel = Math.max(MIN_ZOOM, zoomLevel - 0.2);
-    renderTimelineHeader(payload);
-    renderGanttRows(payload);
-    renderDependencies(payload);
+    renderGanttView(payload, { resetScroll: false });
   });
+}
+
+function setupLegendFilters(payload) {
+  const buttons = document.querySelectorAll("[data-gantt-filter]");
+  const backButton = document.getElementById("ganttFilterBack");
+
+  buttons.forEach((button) => {
+    button.addEventListener("click", () => {
+      activeGanttFilter = button.dataset.ganttFilter || "all";
+      renderGanttView(payload);
+    });
+  });
+
+  if (backButton) {
+    backButton.addEventListener("click", () => {
+      activeGanttFilter = "all";
+      renderGanttView(payload);
+    });
+  }
 }
 
 // ============= Excel Export =============
@@ -982,9 +1034,11 @@ function handleCalendarClick(dateStr) {
 // ============= Render Dependencies =============
 function renderDependencies(payload) {
   const svg = document.getElementById("ganttDependencies");
-  if (!svg || payload.tasks.length < 2) return;
+  if (!svg) return;
 
   svg.innerHTML = '<defs><marker id="arrowhead" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto"><polygon points="0 0, 10 3, 0 6" fill="rgba(103, 169, 223, 0.6)" /></marker></defs>';
+
+  if (payload.tasks.length < 2) return;
 
   const container = document.getElementById("ganttRowsContainer");
   if (!container) return;
@@ -1077,16 +1131,13 @@ if ("scrollRestoration" in history) {
     payload.maxDate = yearEnd;
   }
 
-  renderLeftPanel(payload);
-  renderTimelineHeader(payload);
-  renderGanttRows(payload);
-  renderDependencies(payload);
+  renderGanttView(payload);
   setupScrollSync();
   setupZoomControls(payload);
+  setupLegendFilters(payload);
   setupCalendarControls();
   renderCalendar();
   hookDownload(payload);
   setUpdatedDate();
-  requestAnimationFrame(resetGanttScroll);
   window.setInterval(syncCalendarToCurrentMonth, 60000);
 })();

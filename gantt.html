@@ -11,7 +11,7 @@
       href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="gantt.css?v=20260701-02" />
+    <link rel="stylesheet" href="gantt.css?v=20260701-03" />
     <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
   </head>
   <body>
@@ -41,13 +41,14 @@
         <button id="calendarNextMonth" class="btn ghost icon-btn" title="Mes siguiente">→</button>
       </div>
 
-      <section class="legend" aria-label="Leyenda por etiqueta">
-        <span class="legend-item entel">■ Entel</span>
-        <span class="legend-item intellicore">■ Intellicore</span>
-        <span class="legend-item gestion">■ Gestion</span>
-        <span class="legend-item splunk">■ Splunk</span>
-        <span class="legend-item conjunta">■ Conjunta</span>
-        <span class="legend-item legend-completed">✓ Completada</span>
+      <section class="legend" aria-label="Filtros por etiqueta">
+        <button class="legend-item entel" type="button" data-gantt-filter="entel">■ Entel</button>
+        <button class="legend-item intellicore" type="button" data-gantt-filter="intellicore">■ Intellicore</button>
+        <button class="legend-item gestion" type="button" data-gantt-filter="gestion">■ Gestion</button>
+        <button class="legend-item splunk" type="button" data-gantt-filter="splunk">■ Splunk</button>
+        <button class="legend-item conjunta" type="button" data-gantt-filter="conjunta">■ Conjunta</button>
+        <button class="legend-item legend-completed" type="button" data-gantt-filter="completed">✓ Completada</button>
+        <button id="ganttFilterBack" class="btn ghost filter-back" type="button" hidden>Volver</button>
       </section>
 
       <div class="gantt-container">
@@ -79,6 +80,6 @@
       </div>
     </main>
 
-    <script src="gantt.js?v=20260701-02"></script>
+    <script src="gantt.js?v=20260701-03"></script>
   </body>
 </html>

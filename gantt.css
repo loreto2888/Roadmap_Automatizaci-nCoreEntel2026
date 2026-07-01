@@ -11,6 +11,7 @@
   --splunk: #9dc77b;
   --conjunta: #ccb96a;
   --gantt-row-height: 57px;
+  --gantt-left-grid: minmax(260px, 1fr) 58px 118px 118px 144px 132px 130px;
   font-family: "Manrope", sans-serif;
 }
 
@@ -29,7 +30,7 @@ body {
 }
 
 .gantt-shell {
-  width: min(1600px, calc(100% - 30px));
+  width: min(1900px, calc(100% - 30px));
   margin: 18px auto 30px;
 }
 
@@ -132,6 +133,8 @@ h1 {
 }
 
 .legend-item {
+  appearance: none;
+  border: 1px solid transparent;
   padding: 7px 12px;
   border-radius: 999px;
   font-weight: 600;
@@ -139,6 +142,20 @@ h1 {
   display: flex;
   align-items: center;
   gap: 6px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: transform 0.2s ease, filter 0.2s ease, box-shadow 0.2s ease;
+}
+
+.legend-item:hover,
+.legend-item.active {
+  filter: brightness(1.15);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+}
+
+.filter-back[hidden] {
+  display: none;
 }
 
 .legend-item.entel {
@@ -189,7 +206,7 @@ h1 {
 }
 
 .gantt-sidebar {
-  width: 640px;
+  width: 980px;
   flex-shrink: 0;
   border-right: 1px solid var(--line);
   display: flex;
@@ -200,7 +217,7 @@ h1 {
 
 .gantt-head-left {
   display: grid;
-  grid-template-columns: minmax(150px, 0.88fr) 34px 78px 78px 96px 112px 110px;
+  grid-template-columns: var(--gantt-left-grid);
   gap: 0;
   align-items: center;
   height: 60px;
@@ -245,7 +262,7 @@ h1 {
 
 .gantt-row-left {
   display: grid;
-  grid-template-columns: minmax(150px, 0.88fr) 34px 78px 78px 96px 112px 110px;
+  grid-template-columns: var(--gantt-left-grid);
   gap: 0;
   align-items: center;
   padding: 9px 6px;
@@ -831,15 +848,7 @@ h1 {
   }
 
   .gantt-sidebar {
-    width: 280px;
-  }
-
-  .gantt-head-left {
-    grid-template-columns: 120px 40px 50px 50px 40px;
-  }
-
-  .gantt-row-left {
-    grid-template-columns: 120px 40px 50px 50px 40px;
+    width: 980px;
   }
 
   .calendar-container {
