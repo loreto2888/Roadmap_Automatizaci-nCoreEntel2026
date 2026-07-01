@@ -203,7 +203,7 @@ function getColWidthPx() {
 }
 
 function getColWidthDays() {
-  return DAYS_PER_COL / zoomLevel;
+  return DAYS_PER_COL;
 }
 
 // ============= Render Left Panel (Task List) =============
