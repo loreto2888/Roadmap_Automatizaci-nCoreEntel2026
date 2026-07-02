@@ -88,7 +88,6 @@ function scopeFromTask(task, categoryDescriptions) {
   const haystack = normalizeIdentifier([task.title || "", ...activeCategories, task.id || ""].join(" "));
   if (haystack.includes("INTELLICORE")) return "Intellicore";
   if (haystack.includes("DESARROLLO")) return "Desarrollo";
-  if (haystack.includes("SPLUNK") || haystack.includes("DPLINK")) return "Servicio Splunk";
   if (haystack.includes("CONJUNTA") || haystack.includes("CONJUNTO")) return "Entel_Intellicore";
   return "Entel";
 }

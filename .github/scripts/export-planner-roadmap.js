@@ -69,7 +69,6 @@ function scopeFromTask(task, categoryDescriptions, bucketName = "") {
   if (bucket.includes("INTELLICORE")) return "Intellicore";
   if (bucket.includes("GESTION") || bucket.includes("SCRUM")) return "Scrum";
   if (bucket.includes("DESARROLLO")) return "Desarrollo";
-  if (bucket.includes("SPLUNK")) return "Servicio Splunk";
   if (bucket.includes("CONJUNTA") || bucket.includes("ENTEL_INTELLICORE")) return "Entel_Intellicore";
 
   const applied = task.appliedCategories || {};
@@ -81,7 +80,6 @@ function scopeFromTask(task, categoryDescriptions, bucketName = "") {
   const haystack = normalizeIdentifier([task.title || "", ...activeCategories, task.id || ""].join(" "));
   if (haystack.includes("INTELLICORE")) return "Intellicore";
   if (haystack.includes("DESARROLLO")) return "Desarrollo";
-  if (haystack.includes("SPLUNK") || haystack.includes("DPLINK")) return "Servicio Splunk";
   if (haystack.includes("CONJUNTA") || haystack.includes("CONJUNTO") || haystack.includes("ENTEL_INTELLICORE")) return "Entel_Intellicore";
   return "Entel";
 }

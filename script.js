@@ -639,13 +639,13 @@ function extractTaskCode(value) {
 
 function normalizedScopeKey(value) {
   const normalized = normalizeIdentifier(value);
+  if (normalized === "SPLUNK" || normalized === "SERVICIO SPLUNK") return "splunk";
   if (extractTaskCode(value).startsWith("GESTION-")) return "gestion";
   if (normalized.includes("SCRUM") || normalized.includes("GESTION")) return "gestion";
   if (normalized.includes("ENTEL_INTELLICORE") || normalized.includes("CONJUNTA") || normalized.includes("CONJUNTO")) return "conjunta";
   if (normalized.includes("DESARROLLO")) return "desarrollo";
   if (normalized.includes("INTELLICORE")) return "intellicore";
   if (normalized.includes("ENTEL")) return "entel";
-  if (normalized.includes("SPLUNK") || normalized.includes("DPLINK")) return "splunk";
   return "entel";
 }
 
@@ -1041,12 +1041,12 @@ function badgeClass(priority) {
 
 function scopeClass(scope) {
   const normalized = normalizeIdentifier(scope);
+  if (normalized === "SPLUNK" || normalized === "SERVICIO SPLUNK") return "scope-splunk";
   if (normalized.includes("SCRUM") || normalized.includes("GESTION")) return "scope-gestion";
   if (normalized.includes("ENTEL_INTELLICORE") || normalized.includes("CONJUNTA") || normalized.includes("CONJUNTO")) return "scope-conjunta";
   if (normalized.includes("DESARROLLO")) return "scope-desarrollo";
   if (normalized.includes("INTELLICORE")) return "scope-intellicore";
   if (normalized.includes("ENTEL")) return "scope-entel";
-  if (normalized.includes("SPLUNK") || normalized.includes("DPLINK")) return "scope-splunk";
   return "scope-entel";
 }
 
