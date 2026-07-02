@@ -448,10 +448,10 @@ let roadmap = [
     ],
   },
   {
-    lane: "CONJUNTA",
+    lane: "ENTEL_INTELLICORE",
     key: "conjunta",
     kicker: "Frente 03",
-    title: "Roadmap Conjunto",
+    title: "Roadmap Entel_Intellicore",
     tasks: [
       {
         id: "CONJUNTA-001",
@@ -504,10 +504,10 @@ let roadmap = [
     ],
   },
   {
-    lane: "GESTION",
+    lane: "SCRUM",
     key: "gestion",
     kicker: "Frente 04",
-    title: "Roadmap Gestion",
+    title: "Roadmap Scrum",
     tasks: [
       {
         id: "GESTION-001",
@@ -536,10 +536,10 @@ let roadmap = [
     ],
   },
   {
-    lane: "SPLUNK",
+    lane: "SERVICIO SPLUNK",
     key: "splunk",
     kicker: "Frente 05",
-    title: "Roadmap Splunk",
+    title: "Roadmap Servicio Splunk",
     tasks: [
       {
         id: "SPLUNK-001",
@@ -619,10 +619,11 @@ let roadmap = [
 
 const scopeDefinitions = [
   { key: "entel", label: "Entel", lane: "ENTEL", title: "Roadmap Entel", kicker: "Frente 01" },
-  { key: "intellicore", label: "Intellicore", lane: "INTELLICORE", title: "Roadmap Intellicore", kicker: "Frente 02" },
-  { key: "conjunta", label: "Conjunta", lane: "CONJUNTA", title: "Roadmap Conjunta", kicker: "Frente 03" },
-  { key: "splunk", label: "Splunk", lane: "SPLUNK", title: "Roadmap Splunk", kicker: "Frente 04" },
-  { key: "gestion", label: "Gestion", lane: "GESTION", title: "Roadmap Gestion", kicker: "Frente 05" },
+  { key: "intellicore", label: "Intellicore", lane: "INTELLICORE", title: "Desarrollos", kicker: "Frente 02" },
+  { key: "conjunta", label: "Entel_Intellicore", lane: "ENTEL_INTELLICORE", title: "Roadmap Entel_Intellicore", kicker: "Frente 03" },
+  { key: "splunk", label: "Servicio Splunk", lane: "SERVICIO SPLUNK", title: "Roadmap Servicio Splunk", kicker: "Frente 04" },
+  { key: "desarrollo", label: "Desarrollo", lane: "DESARROLLO", title: "Roadmap Desarrollo", kicker: "Frente 05" },
+  { key: "gestion", label: "Scrum", lane: "SCRUM", title: "Roadmap Scrum", kicker: "Frente 06" },
 ];
 
 function normalizeIdentifier(value) {
@@ -639,11 +640,12 @@ function extractTaskCode(value) {
 function normalizedScopeKey(value) {
   const normalized = normalizeIdentifier(value);
   if (extractTaskCode(value).startsWith("GESTION-")) return "gestion";
-  if (normalized.includes("GESTION")) return "gestion";
-  if (normalized.includes("ENTEL")) return "entel";
+  if (normalized.includes("SCRUM") || normalized.includes("GESTION")) return "gestion";
+  if (normalized.includes("ENTEL_INTELLICORE") || normalized.includes("CONJUNTA") || normalized.includes("CONJUNTO")) return "conjunta";
+  if (normalized.includes("DESARROLLO")) return "desarrollo";
   if (normalized.includes("INTELLICORE")) return "intellicore";
+  if (normalized.includes("ENTEL")) return "entel";
   if (normalized.includes("SPLUNK") || normalized.includes("DPLINK")) return "splunk";
-  if (normalized.includes("CONJUNTA") || normalized.includes("CONJUNTO")) return "conjunta";
   return "entel";
 }
 
@@ -747,6 +749,7 @@ const urgentList = document.getElementById("urgentList");
 const toastStack = document.getElementById("toastStack");
 const configureWebhook = document.getElementById("configureWebhook");
 const sendWebhook = document.getElementById("sendWebhook");
+const notificationEmail = "j.barrientos@intellicore.cl";
 
 let activeFilter = "all";
 let planningSignature = "";
@@ -786,6 +789,7 @@ const scopeColors = {
   gestion: "#d96fd3",
   splunk: "#9dc77b",
   conjunta: "#ccb96a",
+  desarrollo: "#39d0c2",
 };
 
 function renderChartLegend() {
@@ -983,15 +987,30 @@ function buildAlertPayload(visible) {
     .join("\n");
 
   const body = alerts || "- Sin alertas urgentes/important en la vista actual";
+  const subject = "Roadmap Core - Alertas de avance";
+  const message = `Roadmap Core - Alertas (${new Date().toLocaleString("es-CL", { hour12: false })})\nDestinatario: ${notificationEmail}\nFiltro: ${activeFilter}\n${body}`;
+
   return {
-    text: `Roadmap Core - Alertas (${new Date().toLocaleString("es-CL", { hour12: false })})\nFiltro: ${activeFilter}\n${body}`,
+    to: notificationEmail,
+    email: notificationEmail,
+    subject,
+    text: message,
+    body: message,
   };
+}
+
+function openAlertEmailFallback(payload) {
+  const mailto = `mailto:${encodeURIComponent(notificationEmail)}?subject=${encodeURIComponent(payload.subject)}&body=${encodeURIComponent(payload.body)}`;
+  window.location.href = mailto;
 }
 
 async function sendAlertsToTeams(visible) {
   const webhook = getWebhookUrl();
+  const payload = buildAlertPayload(visible);
+
   if (!webhook) {
-    pushToast({ id: "WEBHOOK", priority: "Important", title: "Configura primero el webhook de Teams", owner: "Sistema" }, "important");
+    openAlertEmailFallback(payload);
+    pushToast({ id: "EMAIL", priority: "Important", title: `Correo preparado para ${notificationEmail}`, owner: "Sistema" }, "important");
     return;
   }
 
@@ -999,16 +1018,17 @@ async function sendAlertsToTeams(visible) {
     const response = await fetch(webhook, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(buildAlertPayload(visible)),
+      body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
       throw new Error(`HTTP ${response.status}`);
     }
 
-    pushToast({ id: "TEAMS", priority: "Important", title: "Alertas enviadas a Teams", owner: "Sistema" }, "important");
+    pushToast({ id: "EMAIL", priority: "Important", title: `Alertas enviadas a ${notificationEmail}`, owner: "Sistema" }, "important");
   } catch {
-    pushToast({ id: "TEAMS", priority: "Urgent", title: "No se pudo enviar el webhook", owner: "Sistema" }, "urgent");
+    openAlertEmailFallback(payload);
+    pushToast({ id: "EMAIL", priority: "Urgent", title: "No se pudo enviar el webhook; correo preparado", owner: "Sistema" }, "urgent");
   }
 }
 
@@ -1021,11 +1041,12 @@ function badgeClass(priority) {
 
 function scopeClass(scope) {
   const normalized = normalizeIdentifier(scope);
-  if (normalized.includes("GESTION")) return "scope-gestion";
-  if (normalized.includes("ENTEL")) return "scope-entel";
+  if (normalized.includes("SCRUM") || normalized.includes("GESTION")) return "scope-gestion";
+  if (normalized.includes("ENTEL_INTELLICORE") || normalized.includes("CONJUNTA") || normalized.includes("CONJUNTO")) return "scope-conjunta";
+  if (normalized.includes("DESARROLLO")) return "scope-desarrollo";
   if (normalized.includes("INTELLICORE")) return "scope-intellicore";
+  if (normalized.includes("ENTEL")) return "scope-entel";
   if (normalized.includes("SPLUNK") || normalized.includes("DPLINK")) return "scope-splunk";
-  if (normalized.includes("CONJUNTA") || normalized.includes("CONJUNTO")) return "scope-conjunta";
   return "scope-entel";
 }
 
@@ -1155,6 +1176,7 @@ function updateCharts(visible, percent) {
     gestion: 0,
     splunk: 0,
     conjunta: 0,
+    desarrollo: 0,
   };
 
   visible.forEach((task) => {
@@ -1270,7 +1292,7 @@ function renderPlanningPanel(visible) {
       const title = document.createElement("strong");
       title.textContent = `${task.id} - ${task.title}`;
       const meta = document.createElement("span");
-      meta.textContent = `${task.priority} · ${task.scope} · ${delay.label}`;
+      meta.textContent = `${task.priority} · ${inferTaskScope(task)} · ${delay.label}`;
       head.append(title, meta);
 
       const track = document.createElement("div");
@@ -1386,17 +1408,8 @@ function updateStats() {
       riskOwner.textContent = "Sin atrasos";
     } else {
       const scopeMap = overdueTasks.reduce((acc, task) => {
-        const scopeKey = scopeClass(task.scope);
-        const label =
-          scopeKey === "scope-entel"
-            ? "Entel"
-            : scopeKey === "scope-intellicore"
-              ? "Intellicore"
-              : scopeKey === "scope-gestion"
-                ? "Gestion"
-                : scopeKey === "scope-splunk"
-                  ? "Splunk"
-                  : "Conjunta";
+        const scopeKey = scopeClass(task.scope).replace("scope-", "");
+        const label = scopeLabelFromKey(scopeKey);
         acc[label] = (acc[label] || 0) + 1;
         return acc;
       }, {});
@@ -1434,26 +1447,28 @@ function drawProgressChart() {
   
   // Agrupar por scope
   const scopeColors = {
-    "Entel": "#67a9df",
-    "Intellicore": "#e4580d",
-    "Gestion": "#d96fd3",
-    "Conjunta": "#ccb96a",
-    "Splunk": "#9dc77b"
+    entel: "#67a9df",
+    intellicore: "#e4580d",
+    gestion: "#d96fd3",
+    conjunta: "#ccb96a",
+    splunk: "#9dc77b",
+    desarrollo: "#39d0c2"
   };
   
   const scopeTotals = {
-    "Entel": { total: 0, completed: 0 },
-    "Intellicore": { total: 0, completed: 0 },
-    "Conjunta": { total: 0, completed: 0 },
-    "Splunk": { total: 0, completed: 0 },
-    "Gestion": { total: 0, completed: 0 }
+    entel: { total: 0, completed: 0 },
+    intellicore: { total: 0, completed: 0 },
+    conjunta: { total: 0, completed: 0 },
+    splunk: { total: 0, completed: 0 },
+    desarrollo: { total: 0, completed: 0 },
+    gestion: { total: 0, completed: 0 }
   };
   
   allTasks.forEach((task) => {
-    const scope = task.scope || "Entel";
-    if (scopeTotals[scope]) {
-      scopeTotals[scope].total++;
-      if (task.completed) scopeTotals[scope].completed++;
+    const scopeKey = scopeClass(task.scope).replace("scope-", "");
+    if (scopeTotals[scopeKey]) {
+      scopeTotals[scopeKey].total++;
+      if (task.completed) scopeTotals[scopeKey].completed++;
     }
   });
   
@@ -1518,11 +1533,12 @@ function updateBreakdown(scopeTotals) {
   if (!breakdownRows) return;
   
   const scopeColors = {
-    "Entel": "#67a9df",
-    "Intellicore": "#e4580d",
-    "Gestion": "#d96fd3",
-    "Conjunta": "#ccb96a",
-    "Splunk": "#9dc77b"
+    entel: "#67a9df",
+    intellicore: "#e4580d",
+    gestion: "#d96fd3",
+    conjunta: "#ccb96a",
+    splunk: "#9dc77b",
+    desarrollo: "#39d0c2"
   };
   
   breakdownRows.innerHTML = "";
@@ -1538,17 +1554,17 @@ function updateBreakdown(scopeTotals) {
   `;
   breakdownRows.appendChild(header);
   
-  Object.entries(scopeTotals).forEach(([scope, data]) => {
+  scopeDefinitions.forEach(({ key: scopeKey }) => {
+    const data = scopeTotals[scopeKey] || { total: 0, completed: 0 };
     const pending = data.total - data.completed;
-    if (data.total === 0) return;
-    const percent = Math.round((data.completed / data.total) * 100);
+    const percent = data.total > 0 ? Math.round((data.completed / data.total) * 100) : 0;
     
     const row = document.createElement("div");
     row.className = "breakdown-row";
 
     const label = document.createElement("div");
     label.className = "breakdown-label";
-    label.innerHTML = `<span class="breakdown-dot" style="background-color: ${scopeColors[scope]};"></span><span>${scope}</span>`;
+    label.innerHTML = `<span class="breakdown-dot" style="background-color: ${scopeColors[scopeKey]};"></span><span>${scopeLabelFromKey(scopeKey)}</span>`;
 
     const pendingCell = document.createElement("strong");
     pendingCell.textContent = String(pending);
@@ -1576,7 +1592,7 @@ function updateDependencies(dependencies) {
   const crossScopeDeps = {};
   
   const scopeByTaskId = new Map(
-    getAllTasks().map((task) => [String(task.id || "").toUpperCase(), task.scope || "Entel"])
+    getAllTasks().map((task) => [String(task.id || "").toUpperCase(), inferTaskScope(task)])
   );
 
   const inferDependencyScope = (taskId) => {
@@ -1584,9 +1600,9 @@ function updateDependencies(dependencies) {
     const known = scopeByTaskId.get(text);
     if (known) return known;
     if (text.startsWith("INT")) return "Intellicore";
-    if (normalizeIdentifier(text).startsWith("GESTION")) return "Gestion";
-    if (text.startsWith("SPL")) return "Splunk";
-    if (text.startsWith("CON")) return "Conjunta";
+    if (normalizeIdentifier(text).startsWith("GESTION")) return "Scrum";
+    if (text.startsWith("SPL")) return "Servicio Splunk";
+    if (text.startsWith("CON")) return "Entel_Intellicore";
     return "Entel";
   };
 
@@ -1704,7 +1720,7 @@ function renderRoadmap() {
       owner.textContent = task.owner;
       priority.textContent = task.priority;
       priority.classList.add(badgeClass(task.priority));
-      scope.textContent = task.scope;
+      scope.textContent = inferTaskScope(task);
       scope.classList.add(scopeKey);
       delayBadge.className = `badge badge-delay ${delay.state}`;
       delayBadge.textContent = delay.label;

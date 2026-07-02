@@ -85,7 +85,7 @@
           </div>
           
           <div class="chart-breakdown">
-            <div class="breakdown-title">AVANCE AUTOMATIZACIÓN CORE ENTEL</div>
+            <div class="breakdown-title">AVANCE FASE INICIAL GESTIÓN</div>
             <div class="breakdown-rows" id="breakdownRows"></div>
             
             <div class="dependencies-section" id="dependenciesSection" style="display: none; margin-top: 16px; border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 12px;">
@@ -99,11 +99,12 @@
       <section class="control-bar">
         <div class="chip-group" role="tablist" aria-label="Filtrar roadmap">
           <button class="chip active" data-filter="all" type="button">Todo</button>
-          <button class="chip" data-filter="entel" type="button">ENTEL</button>
-          <button class="chip" data-filter="intellicore" type="button">INTELLICORE</button>
-          <button class="chip" data-filter="gestion" type="button">GESTION</button>
-          <button class="chip" data-filter="splunk" type="button">SPLUNK</button>
-          <button class="chip" data-filter="conjunta" type="button">CONJUNTA</button>
+          <button class="chip" data-filter="entel" type="button">Entel</button>
+          <button class="chip" data-filter="intellicore" type="button">Intellicore</button>
+          <button class="chip" data-filter="conjunta" type="button">Entel_Intellicore</button>
+          <button class="chip" data-filter="splunk" type="button">Servicio Splunk</button>
+          <button class="chip" data-filter="desarrollo" type="button">Desarrollo</button>
+          <button class="chip" data-filter="gestion" type="button">Scrum</button>
           <button class="chip" data-filter="overdue" type="button">ATRASADAS</button>
         </div>
 
@@ -134,10 +135,10 @@
           <div class="planning-rows" id="planningRows"></div>
           <aside class="planning-alerts">
             <h3>Notificaciones</h3>
-            <p>Tareas urgentes e importantes abiertas</p>
+            <p>Alertas a j.barrientos@intellicore.cl</p>
             <div class="planning-alert-toolbar">
               <button id="configureWebhook" type="button">Configurar webhook</button>
-              <button id="sendWebhook" type="button">Enviar alertas a Teams</button>
+              <button id="sendWebhook" type="button">Enviar alertas por correo</button>
             </div>
             <ul id="urgentList"></ul>
           </aside>
@@ -240,6 +241,6 @@
       </article>
     </template>
 
-    <script src="script.js?v=20260622-01"></script>
+    <script src="script.js?v=20260701-05"></script>
   </body>
 </html>

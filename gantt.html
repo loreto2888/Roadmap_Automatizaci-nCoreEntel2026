@@ -11,8 +11,9 @@
       href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="gantt.css?v=20260701-03" />
+    <link rel="stylesheet" href="gantt.css?v=20260701-04" />
     <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
   </head>
   <body>
     <main class="gantt-shell">
@@ -32,6 +33,8 @@
           </div>
           <a class="btn ghost" href="index.html">Volver</a>
           <button id="downloadCsv" class="btn" type="button">Descarga Excel</button>
+          <button id="downloadPdf" class="btn ghost" type="button">Descarga PDF</button>
+          <button id="downloadReportPdf" class="btn" type="button">Informe PDF</button>
         </div>
       </header>
 
@@ -44,9 +47,10 @@
       <section class="legend" aria-label="Filtros por etiqueta">
         <button class="legend-item entel" type="button" data-gantt-filter="entel">■ Entel</button>
         <button class="legend-item intellicore" type="button" data-gantt-filter="intellicore">■ Intellicore</button>
-        <button class="legend-item gestion" type="button" data-gantt-filter="gestion">■ Gestion</button>
-        <button class="legend-item splunk" type="button" data-gantt-filter="splunk">■ Splunk</button>
-        <button class="legend-item conjunta" type="button" data-gantt-filter="conjunta">■ Conjunta</button>
+        <button class="legend-item conjunta" type="button" data-gantt-filter="conjunta">■ Entel_Intellicore</button>
+        <button class="legend-item splunk" type="button" data-gantt-filter="splunk">■ Servicio Splunk</button>
+        <button class="legend-item desarrollo" type="button" data-gantt-filter="desarrollo">■ Desarrollo</button>
+        <button class="legend-item gestion" type="button" data-gantt-filter="gestion">■ Scrum</button>
         <button class="legend-item legend-completed" type="button" data-gantt-filter="completed">✓ Completada</button>
         <button id="ganttFilterBack" class="btn ghost filter-back" type="button" hidden>Volver</button>
       </section>
@@ -80,6 +84,6 @@
       </div>
     </main>
 
-    <script src="gantt.js?v=20260701-03"></script>
+    <script src="gantt.js?v=20260701-06"></script>
   </body>
 </html>

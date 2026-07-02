@@ -279,6 +279,10 @@ h1 {
   border-color: rgba(157, 199, 123, 0.45);
 }
 
+.chip[data-filter="desarrollo"] {
+  border-color: rgba(57, 208, 194, 0.45);
+}
+
 .chip[data-filter="conjunta"] {
   border-color: rgba(204, 185, 106, 0.45);
 }
@@ -305,6 +309,11 @@ h1 {
 .chip[data-filter="splunk"].active {
   border-color: #9dc77b;
   background: rgba(157, 199, 123, 0.25);
+}
+
+.chip[data-filter="desarrollo"].active {
+  border-color: #39d0c2;
+  background: rgba(57, 208, 194, 0.25);
 }
 
 .chip[data-filter="conjunta"].active {
@@ -925,6 +934,10 @@ h1 {
   background: #9dc77b;
 }
 
+.scope-bar-fill.scope-desarrollo {
+  background: #39d0c2;
+}
+
 .scope-bar-fill.scope-conjunta {
   background: #ccb96a;
 }
@@ -1096,6 +1109,11 @@ h1 {
 .badge-scope.scope-gestion {
   background: #f0c0ec;
   color: #7f266f;
+}
+
+.badge-scope.scope-desarrollo {
+  background: #c5f6ef;
+  color: #08786d;
 }
 
 .badge-scope.scope-splunk {
@@ -1336,6 +1354,10 @@ h1 {
 
 .task-card.scope-gestion {
   border-left: 3px solid #d96fd3;
+}
+
+.task-card.scope-desarrollo {
+  border-left: 3px solid #39d0c2;
 }
 
 .task-card.scope-splunk {

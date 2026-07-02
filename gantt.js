@@ -26,11 +26,12 @@ function dayOffset(a, b) {
 
 function normalizeScope(scope) {
   const text = (scope || "").toLowerCase();
+  if (text.includes("entel_intellicore") || text.includes("conjunta") || text.includes("conjunto")) return "conjunta";
+  if (text.includes("scrum") || text.includes("gestion") || text.includes("gerencia") || text.includes("ejecutiv")) return "gestion";
+  if (text.includes("desarrollo")) return "desarrollo";
   if (text.includes("entel")) return "entel";
   if (text.includes("intellicore")) return "intellicore";
-  if (text.includes("gestion") || text.includes("gerencia") || text.includes("ejecutiv")) return "gestion";
   if (text.includes("splunk") || text.includes("dplink")) return "splunk";
-  if (text.includes("conjunta") || text.includes("conjunto")) return "conjunta";
   return "entel";
 }
 
@@ -607,9 +608,267 @@ function getScopeColor(scopeKey) {
     gestion: "D96FD3",
     splunk: "9DC77B",
     conjunta: "CCB96A",
+    desarrollo: "39D0C2",
   };
 
   return hexToArgb(`#${palette[scopeKey] || palette.entel}`);
+}
+
+function getScopeLabel(scopeKey) {
+  const labels = {
+    entel: "Entel",
+    intellicore: "Intellicore",
+    gestion: "Scrum",
+    splunk: "Servicio Splunk",
+    conjunta: "Entel_Intellicore",
+    desarrollo: "Desarrollo",
+  };
+
+  return labels[scopeKey] || "Entel";
+}
+
+function getPdfConstructor() {
+  return window.jspdf?.jsPDF || window.jsPDF;
+}
+
+function getProgressStats(tasks) {
+  const total = tasks.length;
+  const completed = tasks.filter((task) => task.completed).length;
+  const active = total - completed;
+  const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const overdue = tasks.filter((task) => !task.completed && task.endDate < today).length;
+
+  return { total, completed, active, percent, overdue };
+}
+
+function downloadPdfDocument(doc, fileName) {
+  const blob = doc.output("blob");
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = fileName;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
+function drawPdfHeader(doc, title, subtitle) {
+  const pageWidth = doc.internal.pageSize.getWidth();
+  doc.setFillColor(9, 18, 36);
+  doc.rect(0, 0, pageWidth, 76, "F");
+  doc.setTextColor(236, 242, 255);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(18);
+  doc.text(title, 40, 34);
+  doc.setTextColor(157, 176, 209);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+  doc.text(subtitle, 40, 54);
+}
+
+function drawWrappedText(doc, text, x, y, maxWidth, lineHeight) {
+  const lines = doc.splitTextToSize(String(text || ""), maxWidth);
+  doc.text(lines, x, y);
+  return y + lines.length * lineHeight;
+}
+
+function buildGanttPdf(payload) {
+  const JsPDF = getPdfConstructor();
+  if (!JsPDF) throw new Error("jsPDF no está disponible");
+
+  const viewPayload = getFilteredPayload(payload);
+  const stats = getProgressStats(viewPayload.tasks);
+  const doc = new JsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const margin = 34;
+  const columns = [
+    { label: "ID", x: margin, width: 74 },
+    { label: "Tarea", x: 112, width: 250 },
+    { label: "Frente", x: 372, width: 78 },
+    { label: "Inicio", x: 458, width: 70 },
+    { label: "Fin", x: 535, width: 70 },
+    { label: "Estado", x: 612, width: 75 },
+    { label: "%", x: 694, width: 42 },
+    { label: "Dep.", x: 744, width: 62 },
+  ];
+
+  drawPdfHeader(
+    doc,
+    "Carta Gantt del Roadmap",
+    `Exportado: ${new Date().toLocaleString("es-CL", { hour12: false })} | Avance: ${stats.percent}% | Tareas: ${stats.total}`
+  );
+
+  let y = 108;
+  doc.setFillColor(26, 39, 66);
+  doc.roundedRect(margin, 88, pageWidth - margin * 2, 32, 6, 6, "F");
+  doc.setTextColor(236, 242, 255);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9);
+  columns.forEach((column) => doc.text(column.label, column.x, y));
+
+  y = 142;
+  viewPayload.tasks.forEach((task, idx) => {
+    if (y > pageHeight - 44) {
+      doc.addPage("a4", "landscape");
+      drawPdfHeader(doc, "Carta Gantt del Roadmap", "Continuacion de tareas");
+      y = 108;
+      doc.setFillColor(26, 39, 66);
+      doc.roundedRect(margin, 88, pageWidth - margin * 2, 32, 6, 6, "F");
+      doc.setTextColor(236, 242, 255);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      columns.forEach((column) => doc.text(column.label, column.x, y));
+      y = 142;
+    }
+
+    doc.setFillColor(idx % 2 === 0 ? 14 : 17, idx % 2 === 0 ? 24 : 29, idx % 2 === 0 ? 43 : 53);
+    doc.roundedRect(margin, y - 16, pageWidth - margin * 2, 28, 4, 4, "F");
+    doc.setTextColor(236, 242, 255);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(8);
+    doc.text(task.id || "-", columns[0].x, y);
+    doc.text(doc.splitTextToSize(task.title || "-", columns[1].width), columns[1].x, y);
+    doc.text(getScopeLabel(task.scopeKey), columns[2].x, y);
+    doc.text(formatDate(task.startDate), columns[3].x, y);
+    doc.text(formatDate(task.endDate), columns[4].x, y);
+    doc.text(task.status, columns[5].x, y);
+    doc.text(task.completed ? "100" : "0", columns[6].x, y);
+    doc.text(idx > 0 ? viewPayload.tasks[idx - 1].id : "-", columns[7].x, y);
+    y += 31;
+  });
+
+  return doc;
+}
+
+function buildProfessionalReportPdf(payload) {
+  const JsPDF = getPdfConstructor();
+  if (!JsPDF) throw new Error("jsPDF no está disponible");
+
+  const tasks = payload.tasks;
+  const stats = getProgressStats(tasks);
+  const doc = new JsPDF({ orientation: "portrait", unit: "pt", format: "a4" });
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const margin = 42;
+
+  drawPdfHeader(
+    doc,
+    "Informe profesional de avance",
+    `Roadmap Automatizacion Core | ${new Date().toLocaleString("es-CL", { hour12: false })}`
+  );
+
+  let y = 112;
+  const cardWidth = (pageWidth - margin * 2 - 24) / 3;
+  const cards = [
+    ["Avance global", `${stats.percent}%`],
+    ["Tareas cerradas", `${stats.completed}/${stats.total}`],
+    ["Tareas en riesgo", String(stats.overdue)],
+  ];
+
+  cards.forEach(([label, value], index) => {
+    const x = margin + index * (cardWidth + 12);
+    doc.setFillColor(17, 29, 53);
+    doc.roundedRect(x, y, cardWidth, 70, 8, 8, "F");
+    doc.setTextColor(157, 176, 209);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.text(label, x + 14, y + 22);
+    doc.setTextColor(57, 208, 194);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(22);
+    doc.text(value, x + 14, y + 52);
+  });
+
+  y += 108;
+  doc.setTextColor(236, 242, 255);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(14);
+  doc.text("Resumen ejecutivo", margin, y);
+  y += 24;
+  doc.setTextColor(210, 222, 245);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+  y = drawWrappedText(
+    doc,
+    `El roadmap registra ${stats.completed} tareas cerradas de ${stats.total}, con un avance global de ${stats.percent}%. Permanecen ${stats.active} tareas abiertas y ${stats.overdue} tareas abiertas con fecha comprometida vencida segun la planificacion vigente.`,
+    margin,
+    y,
+    pageWidth - margin * 2,
+    14
+  );
+
+  y += 24;
+  doc.setTextColor(236, 242, 255);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(13);
+  doc.text("Avance por frente", margin, y);
+  y += 18;
+
+  const scopeStats = Object.values(
+    tasks.reduce((acc, task) => {
+      const key = task.scopeKey;
+      if (!acc[key]) acc[key] = { label: getScopeLabel(key), total: 0, completed: 0 };
+      acc[key].total += 1;
+      if (task.completed) acc[key].completed += 1;
+      return acc;
+    }, {})
+  );
+
+  doc.setFontSize(9);
+  scopeStats.forEach((scope) => {
+    const pct = scope.total > 0 ? Math.round((scope.completed / scope.total) * 100) : 0;
+    doc.setFillColor(14, 24, 43);
+    doc.roundedRect(margin, y - 12, pageWidth - margin * 2, 24, 4, 4, "F");
+    doc.setTextColor(236, 242, 255);
+    doc.setFont("helvetica", "bold");
+    doc.text(scope.label, margin + 12, y + 4);
+    doc.setFont("helvetica", "normal");
+    doc.text(`${scope.completed}/${scope.total} cerradas`, margin + 170, y + 4);
+    doc.text(`${pct}%`, pageWidth - margin - 38, y + 4);
+    y += 30;
+  });
+
+  y += 12;
+  doc.setTextColor(236, 242, 255);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(13);
+  doc.text("Principales tareas abiertas", margin, y);
+  y += 18;
+
+  const openTasks = tasks
+    .filter((task) => !task.completed)
+    .sort((a, b) => a.endDate - b.endDate)
+    .slice(0, 8);
+
+  doc.setFontSize(9);
+  openTasks.forEach((task) => {
+    doc.setTextColor(210, 222, 245);
+    y = drawWrappedText(doc, `${task.id} - ${task.title} | Fin: ${formatDate(task.endDate)} | ${getScopeLabel(task.scopeKey)}`, margin + 12, y, pageWidth - margin * 2 - 12, 12);
+    y += 6;
+  });
+
+  y += 16;
+  doc.setTextColor(236, 242, 255);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(13);
+  doc.text("Recomendacion de gestion", margin, y);
+  y += 18;
+  doc.setTextColor(210, 222, 245);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+  drawWrappedText(
+    doc,
+    "Priorizar el cierre de tareas vencidas, revisar dependencias entre frentes y mantener seguimiento semanal de los compromisos abiertos. La Carta Gantt debe utilizarse como vista operativa para confirmar fechas, responsables y secuencia de ejecucion.",
+    margin,
+    y,
+    pageWidth - margin * 2,
+    14
+  );
+
+  return doc;
 }
 
 function applyCellBorder(cell) {
@@ -787,7 +1046,7 @@ async function buildExcelWorkbook(payload) {
     const row = summary.addRow([
       task.id,
       task.title,
-      task.scope,
+      getScopeLabel(task.scopeKey),
       formatDate(task.startDate),
       formatDate(task.endDate),
       task.duration,
@@ -913,9 +1172,10 @@ async function buildExcelWorkbook(payload) {
 
 function hookDownload(payload) {
   const button = document.getElementById("downloadCsv");
-  if (!button) return;
+  const pdfButton = document.getElementById("downloadPdf");
+  const reportButton = document.getElementById("downloadReportPdf");
 
-  button.addEventListener("click", async () => {
+  button?.addEventListener("click", async () => {
     try {
       const workbook = await buildExcelWorkbook(payload);
       const buffer = await workbook.xlsx.writeBuffer();
@@ -929,6 +1189,26 @@ function hookDownload(payload) {
     } catch (error) {
       console.error(error);
       alert("No se pudo generar el Excel. Revisa la conexión o intenta de nuevo.");
+    }
+  });
+
+  pdfButton?.addEventListener("click", () => {
+    try {
+      const doc = buildGanttPdf(payload);
+      downloadPdfDocument(doc, "carta-gantt-roadmap-core.pdf");
+    } catch (error) {
+      console.error(error);
+      alert("No se pudo generar el PDF. Revisa la conexión o intenta de nuevo.");
+    }
+  });
+
+  reportButton?.addEventListener("click", () => {
+    try {
+      const doc = buildProfessionalReportPdf(payload);
+      downloadPdfDocument(doc, "informe-avance-roadmap-core.pdf");
+    } catch (error) {
+      console.error(error);
+      alert("No se pudo generar el informe PDF. Revisa la conexión o intenta de nuevo.");
     }
   });
 }

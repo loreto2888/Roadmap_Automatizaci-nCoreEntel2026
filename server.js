@@ -72,11 +72,12 @@ function formatDate(iso) {
 
 function scopeFromTask(task, categoryDescriptions) {
   const taskCode = extractTaskCode(`${task.title || ""} ${task.id || ""}`);
-  if (taskCode.startsWith("CONJUNTA-")) return "Conjunta";
+  if (taskCode.startsWith("CONJUNTA-")) return "Entel_Intellicore";
   if (taskCode.startsWith("ENTEL-")) return "Entel";
   if (taskCode.startsWith("INTELLICORE-")) return "Intellicore";
-  if (taskCode.startsWith("SPLUNK-")) return "Splunk";
-  if (taskCode.startsWith("GESTION-")) return "Gestion";
+  if (taskCode.startsWith("SPLUNK-")) return "Servicio Splunk";
+  if (taskCode.startsWith("GESTION-")) return "Scrum";
+  if (taskCode.startsWith("DESARROLLO-")) return "Desarrollo";
 
   const applied = task.appliedCategories || {};
   const activeCategories = Object.entries(applied)
@@ -86,8 +87,9 @@ function scopeFromTask(task, categoryDescriptions) {
 
   const haystack = normalizeIdentifier([task.title || "", ...activeCategories, task.id || ""].join(" "));
   if (haystack.includes("INTELLICORE")) return "Intellicore";
-  if (haystack.includes("SPLUNK") || haystack.includes("DPLINK")) return "Splunk";
-  if (haystack.includes("CONJUNTA") || haystack.includes("CONJUNTO")) return "Conjunta";
+  if (haystack.includes("DESARROLLO")) return "Desarrollo";
+  if (haystack.includes("SPLUNK") || haystack.includes("DPLINK")) return "Servicio Splunk";
+  if (haystack.includes("CONJUNTA") || haystack.includes("CONJUNTO")) return "Entel_Intellicore";
   return "Entel";
 }
 
@@ -103,19 +105,22 @@ function extractTaskCode(value) {
 }
 
 function scopeKeyFromLabel(scope) {
-  if (scope === "Intellicore") return "intellicore";
-  if (scope === "Gestion") return "gestion";
-  if (scope === "Splunk") return "splunk";
-  if (scope === "Conjunta") return "conjunta";
+  const normalized = normalizeIdentifier(scope);
+  if (normalized.includes("INTELLICORE") && !normalized.includes("ENTEL")) return "intellicore";
+  if (normalized.includes("DESARROLLO")) return "desarrollo";
+  if (normalized.includes("SCRUM") || normalized.includes("GESTION")) return "gestion";
+  if (normalized.includes("SPLUNK")) return "splunk";
+  if (normalized.includes("CONJUNTA") || normalized.includes("CONJUNTO") || normalized.includes("ENTEL_INTELLICORE")) return "conjunta";
   return "entel";
 }
 
 function scopeFromTaskId(taskId) {
   const text = normalizeIdentifier(taskId);
   if (text.startsWith("INT")) return "Intellicore";
-  if (text.startsWith("GESTION")) return "Gestion";
-  if (text.startsWith("SPL")) return "Splunk";
-  if (text.startsWith("CON")) return "Conjunta";
+  if (text.startsWith("DESARROLLO")) return "Desarrollo";
+  if (text.startsWith("GESTION")) return "Scrum";
+  if (text.startsWith("SPL")) return "Servicio Splunk";
+  if (text.startsWith("CON")) return "Entel_Intellicore";
   return "Entel";
 }
 
@@ -216,10 +221,11 @@ async function buildRoadmapFromPlanner() {
 
   const lanes = [
     { key: "entel", lane: "ENTEL", kicker: "Planner", title: "Roadmap Entel", tasks: [] },
-    { key: "intellicore", lane: "INTELLICORE", kicker: "Planner", title: "Roadmap Intellicore", tasks: [] },
-    { key: "gestion", lane: "GESTION", kicker: "Planner", title: "Roadmap Gestion", tasks: [] },
-    { key: "splunk", lane: "SPLUNK", kicker: "Planner", title: "Roadmap Splunk", tasks: [] },
-    { key: "conjunta", lane: "CONJUNTA", kicker: "Planner", title: "Roadmap Conjunta", tasks: [] },
+    { key: "intellicore", lane: "INTELLICORE", kicker: "Planner", title: "Desarrollos", tasks: [] },
+    { key: "conjunta", lane: "ENTEL_INTELLICORE", kicker: "Planner", title: "Roadmap Entel_Intellicore", tasks: [] },
+    { key: "splunk", lane: "SERVICIO SPLUNK", kicker: "Planner", title: "Roadmap Servicio Splunk", tasks: [] },
+    { key: "desarrollo", lane: "DESARROLLO", kicker: "Planner", title: "Roadmap Desarrollo", tasks: [] },
+    { key: "gestion", lane: "SCRUM", kicker: "Planner", title: "Roadmap Scrum", tasks: [] },
   ];
 
   bucketTasks.forEach(({ bucket, tasks }) => {
