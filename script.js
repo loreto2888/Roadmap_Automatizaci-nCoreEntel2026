@@ -724,6 +724,7 @@ const plannerSourceLabel = document.getElementById("plannerSourceLabel");
 const riskCount = document.getElementById("riskCount");
 const riskOwner = document.getElementById("riskOwner");
 const currentDate = document.getElementById("currentDate");
+const currentTime = document.getElementById("currentTime");
 const projectDayCount = document.getElementById("projectDayCount");
 const activeCount = document.getElementById("activeCount");
 const inProgressCount = document.getElementById("inProgressCount");
@@ -886,6 +887,10 @@ function updateDateAndCounter() {
   const now = new Date();
   if (currentDate) {
     currentDate.textContent = formatLongDate(now);
+  }
+
+  if (currentTime) {
+    currentTime.textContent = formatClock(now);
   }
 
   if (!projectDayCount) return;
