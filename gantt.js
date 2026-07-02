@@ -675,6 +675,64 @@ function drawWrappedText(doc, text, x, y, maxWidth, lineHeight) {
   return y + lines.length * lineHeight;
 }
 
+function getReportScopeStats(tasks) {
+  const order = ["entel", "intellicore", "conjunta", "splunk", "desarrollo", "gestion"];
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const stats = order.map((key) => ({
+    key,
+    label: getScopeLabel(key),
+    total: 0,
+    completed: 0,
+    active: 0,
+    overdue: 0,
+    percent: 0,
+  }));
+
+  const byKey = Object.fromEntries(stats.map((item) => [item.key, item]));
+  tasks.forEach((task) => {
+    const scope = byKey[task.scopeKey] || byKey.entel;
+    scope.total += 1;
+    if (task.completed) {
+      scope.completed += 1;
+    } else {
+      scope.active += 1;
+      if (task.endDate < today) scope.overdue += 1;
+    }
+  });
+
+  stats.forEach((scope) => {
+    scope.percent = scope.total > 0 ? Math.round((scope.completed / scope.total) * 100) : 0;
+  });
+
+  return stats;
+}
+
+function getReportScopeColor(scopeKey) {
+  const palette = {
+    entel: [103, 169, 223],
+    intellicore: [228, 88, 13],
+    gestion: [217, 111, 211],
+    splunk: [157, 199, 123],
+    conjunta: [204, 185, 106],
+    desarrollo: [57, 208, 194],
+  };
+
+  return palette[scopeKey] || palette.entel;
+}
+
+function drawReportTableRow(doc, columns, y, row, options = {}) {
+  const fill = options.header ? [26, 39, 66] : options.alt ? [17, 29, 53] : [14, 24, 43];
+  doc.setFillColor(fill[0], fill[1], fill[2]);
+  doc.roundedRect(columns[0].x - 8, y - 14, columns[columns.length - 1].x + columns[columns.length - 1].width - columns[0].x + 16, 25, 4, 4, "F");
+  doc.setFont("helvetica", options.header ? "bold" : "normal");
+  doc.setFontSize(8.5);
+  doc.setTextColor(236, 242, 255);
+  columns.forEach((column, index) => {
+    doc.text(String(row[index]), column.x, y + 2, { maxWidth: column.width });
+  });
+}
+
 function buildGanttPdf(payload) {
   const JsPDF = getPdfConstructor();
   if (!JsPDF) throw new Error("jsPDF no está disponible");
@@ -750,9 +808,18 @@ function buildProfessionalReportPdf(payload) {
 
   const tasks = payload.tasks;
   const stats = getProgressStats(tasks);
+  const scopeStats = getReportScopeStats(tasks);
   const doc = new JsPDF({ orientation: "portrait", unit: "pt", format: "a4" });
   const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
   const margin = 42;
+
+  const addPageIfNeeded = (currentY, requiredSpace) => {
+    if (currentY + requiredSpace <= pageHeight - margin) return currentY;
+    doc.addPage("a4", "portrait");
+    drawPdfHeader(doc, "Informe profesional de avance", "Continuacion del analisis ejecutivo");
+    return 112;
+  };
 
   drawPdfHeader(
     doc,
@@ -786,52 +853,96 @@ function buildProfessionalReportPdf(payload) {
   doc.setTextColor(236, 242, 255);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(14);
-  doc.text("Resumen ejecutivo", margin, y);
+  doc.text("Fundamentacion del avance", margin, y);
   y += 24;
   doc.setTextColor(210, 222, 245);
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
   y = drawWrappedText(
     doc,
-    `El roadmap registra ${stats.completed} tareas cerradas de ${stats.total}, con un avance global de ${stats.percent}%. Permanecen ${stats.active} tareas abiertas y ${stats.overdue} tareas abiertas con fecha comprometida vencida segun la planificacion vigente.`,
+    `El roadmap registra ${stats.completed} tareas cerradas de ${stats.total}, con un avance global de ${stats.percent}%. Esto significa que el porcentaje se calcula dividiendo las tareas cerradas por el total de tareas planificadas y multiplicando por 100. Permanecen ${stats.active} tareas abiertas y ${stats.overdue} tareas abiertas con fecha comprometida vencida, por lo que el avance debe leerse junto con el nivel de riesgo y no solo como un numero de cumplimiento.`,
     margin,
     y,
     pageWidth - margin * 2,
     14
   );
 
-  y += 24;
+  y += 18;
   doc.setTextColor(236, 242, 255);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(13);
-  doc.text("Avance por frente", margin, y);
-  y += 18;
+  doc.text("Grafica de avance por frente", margin, y);
+  y += 16;
 
-  const scopeStats = Object.values(
-    tasks.reduce((acc, task) => {
-      const key = task.scopeKey;
-      if (!acc[key]) acc[key] = { label: getScopeLabel(key), total: 0, completed: 0 };
-      acc[key].total += 1;
-      if (task.completed) acc[key].completed += 1;
-      return acc;
-    }, {})
-  );
+  const chartX = margin;
+  const chartY = y;
+  const chartWidth = pageWidth - margin * 2;
+  const rowHeight = 23;
+  const labelWidth = 122;
+  const barWidth = chartWidth - labelWidth - 62;
+  doc.setFillColor(10, 18, 34);
+  doc.roundedRect(chartX, chartY - 10, chartWidth, scopeStats.length * rowHeight + 22, 8, 8, "F");
 
-  doc.setFontSize(9);
-  scopeStats.forEach((scope) => {
-    const pct = scope.total > 0 ? Math.round((scope.completed / scope.total) * 100) : 0;
-    doc.setFillColor(14, 24, 43);
-    doc.roundedRect(margin, y - 12, pageWidth - margin * 2, 24, 4, 4, "F");
+  scopeStats.forEach((scope, index) => {
+    const rowY = chartY + 12 + index * rowHeight;
+    const color = getReportScopeColor(scope.key);
     doc.setTextColor(236, 242, 255);
     doc.setFont("helvetica", "bold");
-    doc.text(scope.label, margin + 12, y + 4);
+    doc.setFontSize(8.5);
+    doc.text(scope.label, chartX + 12, rowY);
+    doc.setFillColor(31, 45, 73);
+    doc.roundedRect(chartX + labelWidth, rowY - 8, barWidth, 9, 4, 4, "F");
+    doc.setFillColor(color[0], color[1], color[2]);
+    doc.roundedRect(chartX + labelWidth, rowY - 8, Math.max(2, (barWidth * scope.percent) / 100), 9, 4, 4, "F");
     doc.setFont("helvetica", "normal");
-    doc.text(`${scope.completed}/${scope.total} cerradas`, margin + 170, y + 4);
-    doc.text(`${pct}%`, pageWidth - margin - 38, y + 4);
-    y += 30;
+    doc.text(`${scope.percent}%`, chartX + labelWidth + barWidth + 14, rowY);
   });
 
-  y += 12;
+  y += scopeStats.length * rowHeight + 42;
+  y = addPageIfNeeded(y, 160);
+  doc.setTextColor(236, 242, 255);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(13);
+  doc.text("Tabla de control por frente", margin, y);
+  y += 20;
+
+  const columns = [
+    { label: "Frente", x: margin + 8, width: 132 },
+    { label: "Total", x: margin + 150, width: 44 },
+    { label: "Cerradas", x: margin + 202, width: 58 },
+    { label: "Abiertas", x: margin + 272, width: 58 },
+    { label: "Riesgo", x: margin + 344, width: 52 },
+    { label: "%", x: margin + 414, width: 38 },
+  ];
+
+  drawReportTableRow(doc, columns, y, columns.map((column) => column.label), { header: true });
+  y += 28;
+  scopeStats.forEach((scope, index) => {
+    drawReportTableRow(doc, columns, y, [scope.label, scope.total, scope.completed, scope.active, scope.overdue, `${scope.percent}%`], { alt: index % 2 === 0 });
+    y += 28;
+  });
+
+  y += 18;
+  y = addPageIfNeeded(y, 110);
+  doc.setTextColor(236, 242, 255);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(13);
+  doc.text("Explicacion de porcentajes", margin, y);
+  y += 18;
+  doc.setTextColor(210, 222, 245);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(10);
+  y = drawWrappedText(
+    doc,
+    "Cada porcentaje corresponde a: tareas cerradas / total de tareas del frente. Un 100% indica que todas las tareas del frente estan cerradas; 0% indica que aun no hay cierres registrados. Los frentes con pocas tareas pueden variar mucho con un solo cierre, por eso la tabla muestra tambien total, abiertas y riesgo para interpretar el avance con contexto.",
+    margin,
+    y,
+    pageWidth - margin * 2,
+    14
+  );
+
+  y += 20;
+  y = addPageIfNeeded(y, 130);
   doc.setTextColor(236, 242, 255);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(13);
@@ -845,12 +956,14 @@ function buildProfessionalReportPdf(payload) {
 
   doc.setFontSize(9);
   openTasks.forEach((task) => {
+    y = addPageIfNeeded(y, 34);
     doc.setTextColor(210, 222, 245);
     y = drawWrappedText(doc, `${task.id} - ${task.title} | Fin: ${formatDate(task.endDate)} | ${getScopeLabel(task.scopeKey)}`, margin + 12, y, pageWidth - margin * 2 - 12, 12);
     y += 6;
   });
 
   y += 16;
+  y = addPageIfNeeded(y, 120);
   doc.setTextColor(236, 242, 255);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(13);
@@ -861,7 +974,7 @@ function buildProfessionalReportPdf(payload) {
   doc.setFontSize(10);
   drawWrappedText(
     doc,
-    "Priorizar el cierre de tareas vencidas, revisar dependencias entre frentes y mantener seguimiento semanal de los compromisos abiertos. La Carta Gantt debe utilizarse como vista operativa para confirmar fechas, responsables y secuencia de ejecucion.",
+    `El estado general se considera ${stats.percent >= 70 ? "favorable" : stats.percent >= 40 ? "en progreso con seguimiento requerido" : "inicial o con bajo nivel de cierre"}. Se recomienda priorizar el cierre de tareas vencidas, revisar dependencias entre frentes y mantener seguimiento semanal de los compromisos abiertos. La Carta Gantt debe utilizarse como vista operativa para confirmar fechas, responsables y secuencia de ejecucion.`,
     margin,
     y,
     pageWidth - margin * 2,
