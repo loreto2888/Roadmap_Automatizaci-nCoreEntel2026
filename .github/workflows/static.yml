@@ -44,13 +44,16 @@ jobs:
           MS_CLIENT_SECRET: ${{ secrets.MS_CLIENT_SECRET }}
           PLANNER_PLAN_ID: ${{ secrets.PLANNER_PLAN_ID }}
         run: node .github/scripts/export-planner-roadmap.js
+      - name: Prepare Pages artifact
+        run: |
+          mkdir -p public
+          cp index.html gantt.html styles.css gantt.css script.js gantt.js planner-roadmap.json public/
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # Upload entire repository
-          path: '.'
+          path: public
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5
