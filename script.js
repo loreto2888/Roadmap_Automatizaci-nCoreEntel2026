@@ -857,6 +857,17 @@ function formatLongDate(date) {
   return date.toLocaleDateString("es-CL", { day: "2-digit", month: "2-digit", year: "numeric" });
 }
 
+function formatMonthTitle(date) {
+  const label = date.toLocaleDateString("es-CL", { month: "long", year: "numeric" });
+  return label.charAt(0).toUpperCase() + label.slice(1);
+}
+
+function currentMonthWindow(now) {
+  const start = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0, 0);
+  const end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+  return { start, end, totalMs: Math.max(1, end.getTime() - start.getTime()) };
+}
+
 function priorityWeight(priority) {
   const normalized = String(priority || "").toLowerCase();
   if (normalized.includes("urgent")) return 3;
@@ -1279,33 +1290,44 @@ function updateNowMarker() {
 
 function renderPlanningPanel(visible) {
   const withWindows = visible.map((task) => ({ ...task, window: taskWindow(task) }));
-  const starts = withWindows.map((task) => task.window.start.getTime());
-  const ends = withWindows.map((task) => task.window.end.getTime());
   const now = new Date();
+  const monthWindow = currentMonthWindow(now);
 
-  const minTime = starts.length ? Math.min(...starts, now.getTime() - 7 * 86400000) : now.getTime() - 7 * 86400000;
-  const maxTime = ends.length ? Math.max(...ends, now.getTime() + 7 * 86400000) : now.getTime() + 7 * 86400000;
+  const minTime = monthWindow.start.getTime();
+  const maxTime = monthWindow.end.getTime();
 
-  planningWindow.start = new Date(minTime);
-  planningWindow.end = new Date(maxTime);
-  planningWindow.totalMs = Math.max(1, maxTime - minTime);
+  planningWindow.start = monthWindow.start;
+  planningWindow.end = monthWindow.end;
+  planningWindow.totalMs = monthWindow.totalMs;
 
   if (planningRange) {
-    planningRange.textContent = `Rango: ${formatShortDate(planningWindow.start)} al ${formatShortDate(planningWindow.end)}`;
+    planningRange.textContent = `Mes en curso: ${formatMonthTitle(now)}`;
   }
 
   if (planningAxis) {
     planningAxis.innerHTML = "";
-    const ticks = 8;
-    for (let i = 0; i < ticks; i += 1) {
+    const ticks = [];
+    const daysInMonth = monthWindow.end.getDate();
+    for (let day = 1; day <= daysInMonth; day += 1) {
+      const tickDate = new Date(now.getFullYear(), now.getMonth(), day, 12, 0, 0, 0);
+      if (day === 1 || day === daysInMonth || tickDate.getDay() === 1 || day === now.getDate()) {
+        ticks.push(tickDate);
+      }
+    }
+
+    ticks.forEach((tickDate) => {
       const tick = document.createElement("div");
       tick.className = "planning-tick";
-      const tickDate = new Date(minTime + (planningWindow.totalMs * i) / (ticks - 1));
+      if (tickDate.getDate() === now.getDate()) {
+        tick.classList.add("today");
+      }
+      const position = ((tickDate.getTime() - minTime) / planningWindow.totalMs) * 100;
+      tick.style.left = `${Math.max(0, Math.min(100, position))}%`;
       const label = document.createElement("span");
-      label.textContent = formatShortDate(tickDate);
+      label.textContent = tickDate.getDate() === now.getDate() ? `Hoy ${formatShortDate(tickDate)}` : formatShortDate(tickDate);
       tick.appendChild(label);
       planningAxis.appendChild(tick);
-    }
+    });
   }
 
   if (planningRows) {
