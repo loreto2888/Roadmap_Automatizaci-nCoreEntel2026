@@ -750,7 +750,15 @@ const urgentList = document.getElementById("urgentList");
 const toastStack = document.getElementById("toastStack");
 const configureWebhook = document.getElementById("configureWebhook");
 const sendWebhook = document.getElementById("sendWebhook");
-const notificationEmail = "j.barrientos@intellicore.cl";
+const defaultNotificationRecipients = ["j.barrientos@intellicore.cl"];
+const notificationRecipientsByScope = {
+  entel: ["j.barrientos@intellicore.cl"],
+  intellicore: ["j.barrientos@intellicore.cl"],
+  conjunta: ["j.barrientos@intellicore.cl"],
+  splunk: ["j.bourguet@intellicore.cl"],
+  desarrollo: ["a.pozo@intellicore.cl", "m.villablanca@intellicore.cl"],
+  gestion: ["j.barrientos@intellicore.cl"],
+};
 
 let activeFilter = "all";
 let planningSignature = "";
@@ -984,20 +992,42 @@ function setWebhookUrl(url) {
   }
 }
 
+function recipientsForTasks(tasks) {
+  const recipients = new Set();
+  const sourceTasks = tasks.length ? tasks : getVisibleTasks();
+
+  sourceTasks.forEach((task) => {
+    const scopeKey = scopeClass(task.scope).replace("scope-", "");
+    const scopeRecipients = notificationRecipientsByScope[scopeKey] || defaultNotificationRecipients;
+    scopeRecipients.forEach((email) => recipients.add(email));
+  });
+
+  if (!recipients.size) {
+    defaultNotificationRecipients.forEach((email) => recipients.add(email));
+  }
+
+  return Array.from(recipients);
+}
+
 function buildAlertPayload(visible) {
-  const alerts = visible
+  const alertTasks = visible
     .filter((task) => !task.completed && ["urgent", "important"].some((tag) => String(task.priority).toLowerCase().includes(tag)))
+    .slice(0, 8);
+  const recipients = recipientsForTasks(alertTasks.length ? alertTasks : visible);
+  const recipientText = recipients.join(", ");
+  const alerts = alertTasks
     .slice(0, 8)
     .map((task) => `- ${task.id} | ${task.priority} | ${task.title} | ${task.owner}`)
     .join("\n");
 
   const body = alerts || "- Sin alertas urgentes/important en la vista actual";
   const subject = "Roadmap Core - Alertas de avance";
-  const message = `Roadmap Core - Alertas (${new Date().toLocaleString("es-CL", { hour12: false })})\nDestinatario: ${notificationEmail}\nFiltro: ${activeFilter}\n${body}`;
+  const message = `Roadmap Core - Alertas (${new Date().toLocaleString("es-CL", { hour12: false })})\nDestinatarios: ${recipientText}\nFiltro: ${activeFilter}\n${body}`;
 
   return {
-    to: notificationEmail,
-    email: notificationEmail,
+    to: recipientText,
+    email: recipientText,
+    recipients,
     subject,
     text: message,
     body: message,
@@ -1005,7 +1035,8 @@ function buildAlertPayload(visible) {
 }
 
 function openAlertEmailFallback(payload) {
-  const mailto = `mailto:${encodeURIComponent(notificationEmail)}?subject=${encodeURIComponent(payload.subject)}&body=${encodeURIComponent(payload.body)}`;
+  const mailtoRecipients = payload.recipients.map((email) => encodeURIComponent(email)).join(",");
+  const mailto = `mailto:${mailtoRecipients}?subject=${encodeURIComponent(payload.subject)}&body=${encodeURIComponent(payload.body)}`;
   window.location.href = mailto;
 }
 
@@ -1015,7 +1046,7 @@ async function sendAlertsToTeams(visible) {
 
   if (!webhook) {
     openAlertEmailFallback(payload);
-    pushToast({ id: "EMAIL", priority: "Important", title: `Correo preparado para ${notificationEmail}`, owner: "Sistema" }, "important");
+    pushToast({ id: "EMAIL", priority: "Important", title: `Correo preparado para ${payload.to}`, owner: "Sistema" }, "important");
     return;
   }
 
@@ -1030,7 +1061,7 @@ async function sendAlertsToTeams(visible) {
       throw new Error(`HTTP ${response.status}`);
     }
 
-    pushToast({ id: "EMAIL", priority: "Important", title: `Alertas enviadas a ${notificationEmail}`, owner: "Sistema" }, "important");
+    pushToast({ id: "EMAIL", priority: "Important", title: `Alertas enviadas a ${payload.to}`, owner: "Sistema" }, "important");
   } catch {
     openAlertEmailFallback(payload);
     pushToast({ id: "EMAIL", priority: "Urgent", title: "No se pudo enviar el webhook; correo preparado", owner: "Sistema" }, "urgent");
