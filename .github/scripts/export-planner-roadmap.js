@@ -170,6 +170,30 @@ function statusFromBucket(bucketName, task) {
   return "En curso";
 }
 
+function readRoadmapOverrides() {
+  const overridesPath = path.join(process.cwd(), "roadmap-overrides.json");
+  if (!fs.existsSync(overridesPath)) return { completedTaskIds: [] };
+
+  const overrides = JSON.parse(fs.readFileSync(overridesPath, "utf8"));
+  return {
+    completedTaskIds: Array.isArray(overrides.completedTaskIds) ? overrides.completedTaskIds : [],
+  };
+}
+
+function applyRoadmapOverrides(lanes) {
+  const completedTaskIds = new Set(readRoadmapOverrides().completedTaskIds.map((id) => normalizeIdentifier(id)));
+  if (!completedTaskIds.size) return;
+
+  lanes.forEach((lane) => {
+    lane.tasks.forEach((task) => {
+      if (!completedTaskIds.has(normalizeIdentifier(task.id))) return;
+      task.completed = true;
+      task.status = "Completa";
+      task.deposit = "Cierre";
+    });
+  });
+}
+
 function formatDate(iso) {
   if (!iso) return "";
   const date = new Date(iso);
@@ -261,6 +285,8 @@ async function main() {
       });
     });
   });
+
+  applyRoadmapOverrides(lanes);
 
   lanes.forEach((lane) => {
     lane.tasks.sort((a, b) => {
