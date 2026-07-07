@@ -1,7 +1,12 @@
 const fs = require("fs");
 const path = require("path");
+const { DeviceCodeCredential } = require("@azure/identity");
+const { Client } = require("@microsoft/microsoft-graph-client");
 
 const GRAPH_BASE_URL = "https://graph.microsoft.com/v1.0";
+const AZURE_CLI_CLIENT_ID = "04b07795-8ddb-461a-bbee-02f9e1bf7b46";
+const DEFAULT_TENANT_ID = "5bf66ace-03e6-4678-bb05-bd55ec310f0c";
+const DEFAULT_PLAN_ID = "4bj84BvXxU2W_YtJAIu6z2UAHPNx";
 
 function required(name) {
   const value = process.env[name];
@@ -20,6 +25,22 @@ async function graphRequest(url, options = {}) {
   }
 
   return text ? JSON.parse(text) : null;
+}
+
+function readDotEnvPlanner() {
+  const envPath = path.join(process.cwd(), ".env.planner");
+  if (!fs.existsSync(envPath)) return {};
+
+  return fs
+    .readFileSync(envPath, "utf8")
+    .split(/\r?\n/)
+    .reduce((values, line) => {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith("#") || !trimmed.includes("=")) return values;
+      const separator = trimmed.indexOf("=");
+      values[trimmed.slice(0, separator).trim()] = trimmed.slice(separator + 1).trim();
+      return values;
+    }, {});
 }
 
 async function getAccessToken(tenantId, clientId, clientSecret) {
@@ -43,6 +64,40 @@ async function getAccessToken(tenantId, clientId, clientSecret) {
   }
 
   return data.access_token;
+}
+
+function createDeviceGraphClient(tenantId) {
+  const credential = new DeviceCodeCredential({
+    tenantId,
+    clientId: AZURE_CLI_CLIENT_ID,
+    userPromptCallback: (info) => {
+      console.log(info.message);
+    },
+  });
+
+  return Client.initWithMiddleware({
+    authProvider: {
+      getAccessToken: async () => {
+        const token = await credential.getToken("https://graph.microsoft.com/.default");
+        return token.token;
+      },
+    },
+  });
+}
+
+function createAppGraphClient(token) {
+  return {
+    api: (apiPath) => ({
+      get: () =>
+        graphRequest(`${GRAPH_BASE_URL}${apiPath}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+    }),
+  };
+}
+
+async function fetchJson(graphClient, apiPath) {
+  return graphClient.api(apiPath).get();
 }
 
 function normalizeIdentifier(value) {
@@ -125,7 +180,7 @@ function formatDate(iso) {
   return `${day}-${month}-${year}`;
 }
 
-async function resolveOwnerMap(tasks, token) {
+async function resolveOwnerMap(tasks, graphClient) {
   const userIds = new Set();
   tasks.forEach((task) => Object.keys(task.assignments || {}).forEach((id) => userIds.add(id)));
 
@@ -133,9 +188,7 @@ async function resolveOwnerMap(tasks, token) {
   await Promise.all(
     Array.from(userIds).map(async (userId) => {
       try {
-        const user = await graphRequest(`${GRAPH_BASE_URL}/users/${userId}?$select=displayName`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const user = await fetchJson(graphClient, `/users/${userId}?$select=displayName`);
         map[userId] = user.displayName || userId;
       } catch {
         map[userId] = userId;
@@ -147,34 +200,36 @@ async function resolveOwnerMap(tasks, token) {
 }
 
 async function main() {
-  const tenantId = required("MS_TENANT_ID");
-  const clientId = required("MS_CLIENT_ID");
-  const clientSecret = required("MS_CLIENT_SECRET");
-  const planId = required("PLANNER_PLAN_ID");
+  const envPlanner = readDotEnvPlanner();
+  const authMode = process.env.PLANNER_AUTH_MODE || "app";
+  const tenantId = process.env.MS_TENANT_ID || process.env.PLANNER_TENANT_ID || envPlanner.PLANNER_TENANT_ID || DEFAULT_TENANT_ID;
+  const planId = process.env.PLANNER_PLAN_ID || envPlanner.PLANNER_PLAN_ID || DEFAULT_PLAN_ID;
 
-  const token = await getAccessToken(tenantId, clientId, clientSecret);
+  let graphClient;
+  if (authMode === "device") {
+    graphClient = createDeviceGraphClient(tenantId);
+  } else {
+    const clientId = required("MS_CLIENT_ID");
+    const clientSecret = required("MS_CLIENT_SECRET");
+    const token = await getAccessToken(tenantId, clientId, clientSecret);
+    graphClient = createAppGraphClient(token);
+  }
 
   const [bucketResult, planDetails] = await Promise.all([
-    graphRequest(`${GRAPH_BASE_URL}/planner/plans/${planId}/buckets`, {
-      headers: { Authorization: `Bearer ${token}` },
-    }),
-    graphRequest(`${GRAPH_BASE_URL}/planner/plans/${planId}/details`, {
-      headers: { Authorization: `Bearer ${token}` },
-    }),
+    fetchJson(graphClient, `/planner/plans/${planId}/buckets`),
+    fetchJson(graphClient, `/planner/plans/${planId}/details`),
   ]);
 
   const buckets = (bucketResult.value || []).sort((a, b) => a.orderHint.localeCompare(b.orderHint));
   const bucketTasks = await Promise.all(
     buckets.map(async (bucket) => {
-      const data = await graphRequest(`${GRAPH_BASE_URL}/planner/buckets/${bucket.id}/tasks`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const data = await fetchJson(graphClient, `/planner/buckets/${bucket.id}/tasks`);
       return { bucket, tasks: data.value || [] };
     })
   );
 
   const allPlannerTasks = bucketTasks.flatMap((item) => item.tasks);
-  const ownerMap = await resolveOwnerMap(allPlannerTasks, token);
+  const ownerMap = await resolveOwnerMap(allPlannerTasks, graphClient);
   const categoryDescriptions = planDetails?.categoryDescriptions || {};
 
   const lanes = [

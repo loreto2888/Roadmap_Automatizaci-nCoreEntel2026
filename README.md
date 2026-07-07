@@ -46,7 +46,10 @@ https://login.microsoft.com/device
 - En local, el dashboard intenta leer primero `/api/planner/roadmap` para reflejar cambios vivos de Planner.
 - Si la API viva no responde o falta autenticacion, la UI usa `planner-roadmap.json` como respaldo.
 - En GitHub Pages no existe servidor Node, por eso la web publica usa el snapshot `planner-roadmap.json` generado por el workflow.
-- El workflow de Pages no bloquea el despliegue si falla la exportacion de Planner; en ese caso publica usando el snapshot existente.
+- Cada cambio en Teams/Planner puede disparar Power Automate, que llama a GitHub con `repository_dispatch` y ejecuta `.github/workflows/static.yml`.
+- Ademas, GitHub Actions revisa Planner todos los dias a las 11:00 UTC para reflejar cambios aunque no haya un disparo inmediato.
+- El workflow regenera `planner-roadmap.json`, lo sube a `main` y publica la version actualizada en GitHub Pages.
+- La guia de configuracion esta en `POWER_AUTOMATE_SETUP.md`.
 
 ## Conteos por frente
 
@@ -74,7 +77,7 @@ El dashboard muestra por frente:
 
 ## Despliegue en GitHub Pages
 
-Cada push a `main` ejecuta `.github/workflows/static.yml` y publica la web en GitHub Pages.
+Cada push a `main`, ejecucion manual, evento externo `planner_changed` o revision diaria programada ejecuta `.github/workflows/static.yml` y publica la web en GitHub Pages.
 
 Secrets recomendados para regenerar el snapshot desde Planner:
 
@@ -83,7 +86,9 @@ Secrets recomendados para regenerar el snapshot desde Planner:
 - `MS_CLIENT_SECRET`
 - `PLANNER_PLAN_ID`
 
-Si alguno falta o falla, Pages igual despliega la version estatica con el ultimo `planner-roadmap.json` disponible.
+Si alguno falta o falla, el workflow no podra regenerar el snapshot desde Planner.
+
+Para actualizar la pagina automaticamente desde Teams/Planner, configura Power Automate siguiendo `POWER_AUTOMATE_SETUP.md`.
 
 ## Validaciones rapidas
 

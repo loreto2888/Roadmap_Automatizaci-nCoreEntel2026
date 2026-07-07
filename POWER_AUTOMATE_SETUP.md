@@ -1,122 +1,111 @@
-# Setup Power Automate Webhook para GitHub → Planner
+# Power Automate: Teams Planner -> GitHub Pages
 
-> Ruta heredada. La sincronizacion activa del proyecto parte del roadmap local y se ejecuta desde `.github/workflows/static.yml`.
+Este flujo hace que la pagina se actualice sola cuando cambia una tarea en Teams/Planner.
 
-Este flujo reemplaza completamente la dependencia de Entra ID y corre automáticamente cuando haces push desde GitHub.
+Ruta activa:
 
-## Flujo sin código - Paso a paso visual
+1. Cambias una tarea en Teams/Planner.
+2. Power Automate detecta el cambio.
+3. Power Automate llama a GitHub con `repository_dispatch`.
+4. GitHub Actions ejecuta `.github/workflows/static.yml`.
+5. El workflow lee Planner, regenera `planner-roadmap.json`, lo sube a `main` y publica GitHub Pages.
 
-### 1. Abre Power Automate
-1. Ve a https://make.powerautomate.com
-2. Inicia sesión con tu cuenta corporativa
-3. Clic en **Create** (lado izquierdo)
-4. Selecciona **Cloud flow** → **Instant cloud flow**
-5. Elige trigger: **When an HTTP request is received**
-6. Clic **Create**
+Ademas del disparo inmediato por Power Automate, GitHub Actions revisa Planner todos los dias a las 11:00 UTC. Esa revision diaria publica cualquier cambio que haya quedado pendiente.
 
-### 2. Configura el trigger HTTP (parte 1 del flujo)
+## 1. Preparar GitHub
 
-En el trigger **When an HTTP request is received**:
+### Crear token para Power Automate
 
-Copia este JSON en **Request Body JSON Schema**:
+1. En GitHub, abre `Settings -> Developer settings -> Personal access tokens -> Fine-grained tokens`.
+2. Crea un token para este repositorio.
+3. Permisos minimos:
+   - `Metadata`: Read-only
+   - `Contents`: Read and write
+4. Copia el token. Power Automate lo usara en el header `Authorization`.
+
+### Confirmar secrets del workflow
+
+En el repo, entra a `Settings -> Secrets and variables -> Actions` y confirma estos secrets:
+
+- `MS_TENANT_ID`
+- `MS_CLIENT_ID`
+- `MS_CLIENT_SECRET`
+- `PLANNER_PLAN_ID`
+
+Sin estos secrets, GitHub no podra leer Planner para regenerar el snapshot.
+
+## 2. Crear el flujo en Power Automate
+
+1. Abre https://make.powerautomate.com.
+2. Crea un `Automated cloud flow`.
+3. Usa un trigger de Planner/Tasks para el plan del roadmap.
+   - Si aparece `When a task is created or modified`, usa ese.
+   - Si tu tenant solo ofrece triggers separados, crea flujos para `created`, `completed` o el evento disponible que cubra tu operacion.
+   - Si no existe trigger de modificacion en tu conector, usa un flujo `Recurrence` cada 5 minutos como respaldo.
+
+## 3. Agregar accion HTTP hacia GitHub
+
+Agrega una accion `HTTP` despues del trigger.
+
+Configura:
+
+- Method: `POST`
+- URI: `https://api.github.com/repos/loreto2888/Roadmap_Automatizaci-nCoreEntel2026/dispatches`
+- Headers:
+
+```text
+Accept: application/vnd.github+json
+Authorization: Bearer TU_TOKEN_DE_GITHUB
+X-GitHub-Api-Version: 2022-11-28
+Content-Type: application/json
+```
+
+- Body:
 
 ```json
 {
-  "type": "object",
-  "properties": {
-    "repository": {
-      "type": "string"
-    },
-    "branch": {
-      "type": "string"
-    },
-    "sha": {
-      "type": "string"
-    },
-    "actor": {
-      "type": "string"
-    },
-    "commit_url": {
-      "type": "string"
-    }
+  "event_type": "planner_changed",
+  "client_payload": {
+    "source": "power_automate",
+    "taskId": "@{triggerOutputs()?['body/id']}",
+    "changedAt": "@{utcNow()}"
   }
 }
 ```
 
-Clic **Save** y **continúa abajo**.
+El valor importante es `event_type: planner_changed`; ese nombre coincide con el disparador configurado en `.github/workflows/static.yml`.
 
-### 3. Agrega acción: Obtener tareas del bucket (parte 2)
+## 4. Probar
 
-1. Clic **+ New step**
-2. Busca: **List tasks in a bucket** (Planner)
-3. Selecciona el conector.
-4. Rellena:
-   - **Group ID**: tu Teams Group ID (o selecciona del dropdown)
-   - **Plan ID**: tu Planner Plan ID (o selecciona)
-   - **Bucket ID**: tu Bucket ID (o selecciona)
-5. Clic **Save** → continúa
+1. Guarda y activa el flujo.
+2. Cambia una tarea del roadmap en Teams/Planner.
+3. Revisa Power Automate: el run debe quedar exitoso.
+4. Revisa GitHub: `Actions -> Deploy static content to Pages` debe iniciar solo.
+5. Al terminar, valida:
+   - `planner-roadmap.json` queda actualizado en `main`.
+   - La rama `gh-pages` queda publicada.
+   - La pagina publica refleja el cambio al refrescar.
 
-### 4. Agrega acción: Filtrar tarea existente (parte 3)
+## 5. Prueba manual desde terminal
 
-1. Clic **+ New step**
-2. Busca: **Filter array**
-3. En el campo **From**: selecciona **value** (del step anterior)
-4. Condition: **title** (primero) **contains** (segundo) (tercero) `@{triggerBody()?['repository']}` (pégalo entre comillas)
-5. Clic **Save**
+Para probar GitHub sin tocar Planner, ejecuta este `curl` reemplazando el token:
 
-### 5. Agrega acción: Condition - ¿Existe la tarea? (parte 4)
+```bash
+curl -X POST \
+  -H "Accept: application/vnd.github+json" \
+  -H "Authorization: Bearer TU_TOKEN_DE_GITHUB" \
+  -H "X-GitHub-Api-Version: 2022-11-28" \
+  https://api.github.com/repos/loreto2888/Roadmap_Automatizaci-nCoreEntel2026/dispatches \
+  -d '{"event_type":"planner_changed","client_payload":{"source":"manual-test"}}'
+```
 
-1. Clic **+ New step**
-2. Busca: **Condition**
-3. En el campo izquierdo: selecciona **length** function
-4. Dentro: `@{body('Filter_array')}`
-5. Operador: **is greater than**
-6. Valor: `0`
-7. Clic **Save**
+GitHub responde `204 No Content` cuando acepta el evento.
 
-### 6A. Si EXISTE: Actualizar tarea (rama TRUE)
+## Troubleshooting
 
-En la rama **True** (clic en **Add an action**):
-
-1. Busca: **Update a task** (Planner)
-2. Rellena:
-   - **Plan ID**: tu Plan ID
-   - **Task ID**: `@{first(body('Filter_array')).id}`
-   - **Title**: `[Auto]@{triggerBody()?['repository']}[@{triggerBody()?['branch']}] ultimo push @{substring(triggerBody()?['sha'],0,8)}`
-   - **Description**: 
-     ```
-     Repositorio: @{triggerBody()?['repository']}
-     Branch: @{triggerBody()?['branch']}
-     Commit: @{triggerBody()?['sha']}
-     Actor: @{triggerBody()?['actor']}
-     URL: @{triggerBody()?['commit_url']}
-     Actualizado: @{utcNow()}
-     ```
-3. Clic **Save**
-
-### 6B. Si NO EXISTE: Crear tarea (rama FALSE)
-
-En la rama **False** (clic en **Add an action**):
-
-1. Busca: **Create a task** (Planner)
-2. Rellena:
-   - **Plan ID**: tu Plan ID
-   - **Bucket ID**: tu Bucket ID
-   - **Title**: `[Auto]@{triggerBody()?['repository']}[@{triggerBody()?['branch']}] ultimo push @{substring(triggerBody()?['sha'],0,8)}`
-   - **Description**: (mismo que arriba)
-3. Clic **Save**
-
-### 7. Obtén la URL del webhook
-
-1. Arriba en el trigger, abre **When an HTTP request is received**
-2. Copia la URL bajo **HTTP POST URL**
-3. Esa URL es lo que llama GitHub
-
-Ejemplo: `https://prod-XX.westeurope.logic.azure.com:443/workflows/xxxxx/triggers/xxx/run?api-version=2016-06-01&sp=%2Ftriggers%2Fwhen_a_HTTP_request_is_received%2Frun&sv=1.0&sig=xxxx`
-
-### 8. Carga la URL en GitHub Actions
-
-En tu repo en el archivo `.github/workflows/planner-sync-webhook.yml`:
-
-Vas a reemplazar la integración Graph API antigua con un simple POST HTTP al webhook.
+- `401 Bad credentials`: el token es invalido o fue copiado incompleto.
+- `403 Resource not accessible`: faltan permisos `Contents: Read and write` o el token no tiene acceso a este repo.
+- `404 Not Found`: el owner/repo del URI no coincide o el token no puede ver el repo.
+- El workflow inicia pero falla leyendo Planner: revisa los secrets `MS_*` y permisos Graph de la app.
+- El workflow termina bien pero la pagina no cambia: espera a que GitHub Pages publique `gh-pages` y refresca con cache limpia.
 

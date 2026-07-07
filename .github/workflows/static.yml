@@ -9,6 +9,14 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
+  # Reviews Planner once per day and publishes any roadmap changes
+  schedule:
+    - cron: "0 11 * * *"
+
+  # Allows Power Automate to refresh the public page when Teams/Planner changes
+  repository_dispatch:
+    types: [planner_changed]
+
 # Sets permissions of the GITHUB_TOKEN to publish the static site to gh-pages
 permissions:
   contents: write
@@ -42,6 +50,18 @@ jobs:
       - name: Validate Planner roadmap snapshot
         run: |
           node -e 'const fs=require("fs"); const data=JSON.parse(fs.readFileSync("planner-roadmap.json","utf8")); const tasks=(data.roadmap||[]).reduce((total,lane)=>total+(lane.tasks||[]).length,0); if (!data.generatedAt) throw new Error("Planner snapshot was not refreshed by export-planner-roadmap.js"); console.log("Planner snapshot generatedAt=" + data.generatedAt + " tasks=" + tasks);'
+      - name: Commit Planner snapshot to main
+        if: github.event_name == 'repository_dispatch' || github.event_name == 'workflow_dispatch' || github.event_name == 'schedule'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add planner-roadmap.json
+          if git diff --cached --quiet; then
+            echo "Planner snapshot has no changes to commit."
+          else
+            git commit -m "chore: refresh planner roadmap [skip ci]"
+            git push origin HEAD:main
+          fi
       - name: Prepare Pages artifact
         run: |
           mkdir -p public
