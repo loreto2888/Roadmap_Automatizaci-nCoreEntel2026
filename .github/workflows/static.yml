@@ -30,8 +30,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+
       - name: Export Planner roadmap snapshot
-        continue-on-error: true
         timeout-minutes: 2
         env:
           MS_TENANT_ID: ${{ secrets.MS_TENANT_ID }}
@@ -39,6 +39,9 @@ jobs:
           MS_CLIENT_SECRET: ${{ secrets.MS_CLIENT_SECRET }}
           PLANNER_PLAN_ID: ${{ secrets.PLANNER_PLAN_ID }}
         run: node .github/scripts/export-planner-roadmap.js
+      - name: Validate Planner roadmap snapshot
+        run: |
+          node -e 'const fs=require("fs"); const data=JSON.parse(fs.readFileSync("planner-roadmap.json","utf8")); const tasks=(data.roadmap||[]).reduce((total,lane)=>total+(lane.tasks||[]).length,0); if (!data.generatedAt) throw new Error("Planner snapshot was not refreshed by export-planner-roadmap.js"); console.log("Planner snapshot generatedAt=" + data.generatedAt + " tasks=" + tasks);'
       - name: Prepare Pages artifact
         run: |
           mkdir -p public
