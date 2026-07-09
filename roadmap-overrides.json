@@ -2,8 +2,17 @@
   "completedTaskIds": [
     "ENTEL-011",
     "ENTEL-012",
+    "ENTEL-005",
+    "ENTEL-019",
+    "ENTEL-021",
+    "INTELLICORE-001",
+    "INTELLICORE-002",
+    "INTELLICORE-003",
     "INTELLICORE-007",
     "INTELLICORE-012",
-    "INTELLICORE-014"
+    "INTELLICORE-014",
+    "SPLUNK-001",
+    "SPLUNK-005",
+    "SPLUNK-006"
   ]
 }
