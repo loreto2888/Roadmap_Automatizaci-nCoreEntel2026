@@ -634,7 +634,7 @@ function normalizeIdentifier(value) {
 }
 
 function extractTaskCode(value) {
-  return normalizeIdentifier(value).match(/\b[A-Z]+-\d+\b/)?.[0] || "";
+  return normalizeIdentifier(value).match(/\b(?:ENTEL-INTELLICORE|[A-Z]+)-\d+\b/)?.[0] || "";
 }
 
 function normalizedScopeKey(value) {
@@ -642,7 +642,7 @@ function normalizedScopeKey(value) {
   if (normalized === "SPLUNK" || normalized === "SERVICIO SPLUNK") return "splunk";
   if (extractTaskCode(value).startsWith("GESTION-")) return "gestion";
   if (normalized.includes("SCRUM") || normalized.includes("GESTION")) return "gestion";
-  if (normalized.includes("ENTEL_INTELLICORE") || normalized.includes("CONJUNTA") || normalized.includes("CONJUNTO")) return "conjunta";
+  if (normalized.includes("ENTEL_INTELLICORE") || normalized.includes("ENTEL-INTELLICORE") || normalized.includes("CONJUNTA") || normalized.includes("CONJUNTO")) return "conjunta";
   if (normalized.includes("DESARROLLO")) return "desarrollo";
   if (normalized.includes("INTELLICORE")) return "intellicore";
   if (normalized.includes("ENTEL")) return "entel";
@@ -654,7 +654,8 @@ function scopeLabelFromKey(scopeKey) {
 }
 
 function scopeKeyFromTaskPrefix(task) {
-  const code = extractTaskCode(`${task?.id || ""} ${task?.title || ""}`);
+  const code = extractTaskCode(`${task?.title || ""} ${task?.id || ""}`);
+  if (code.startsWith("ENTEL-INTELLICORE-")) return "conjunta";
   if (code.startsWith("CONJUNTA-")) return "conjunta";
   if (code.startsWith("ENTEL-")) return "entel";
   if (code.startsWith("INTELLICORE-")) return "intellicore";

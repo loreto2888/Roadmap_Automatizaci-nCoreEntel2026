@@ -27,7 +27,7 @@ function dayOffset(a, b) {
 function normalizeScope(scope) {
   const text = (scope || "").toLowerCase();
   if (text === "splunk" || text === "servicio splunk") return "splunk";
-  if (text.includes("entel_intellicore") || text.includes("conjunta") || text.includes("conjunto")) return "conjunta";
+  if (text.includes("entel_intellicore") || text.includes("entel-intellicore") || text.includes("conjunta") || text.includes("conjunto")) return "conjunta";
   if (text.includes("scrum") || text.includes("gestion") || text.includes("gerencia") || text.includes("ejecutiv")) return "gestion";
   if (text.includes("desarrollo")) return "desarrollo";
   if (text.includes("entel")) return "entel";
