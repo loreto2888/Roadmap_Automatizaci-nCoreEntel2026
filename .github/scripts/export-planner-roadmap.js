@@ -108,11 +108,12 @@ function normalizeIdentifier(value) {
 }
 
 function extractTaskCode(value) {
-  return normalizeIdentifier(value).match(/\b[A-Z]+-\d+\b/)?.[0] || "";
+  return normalizeIdentifier(value).match(/\b(?:ENTEL-INTELLICORE|[A-Z]+)-\d+\b/)?.[0] || "";
 }
 
 function scopeFromTask(task, categoryDescriptions, bucketName = "") {
   const taskCode = extractTaskCode(`${task.title || ""} ${task.id || ""}`);
+  if (taskCode.startsWith("ENTEL-INTELLICORE-") || taskCode.startsWith("CONJUNTA-")) return "Entel_Intellicore";
   if (taskCode.startsWith("CONJUNTA-")) return "Entel_Intellicore";
   if (taskCode.startsWith("ENTEL-")) return "Entel";
   if (taskCode.startsWith("INTELLICORE-")) return "Intellicore";
@@ -124,7 +125,7 @@ function scopeFromTask(task, categoryDescriptions, bucketName = "") {
   if (bucket.includes("INTELLICORE")) return "Intellicore";
   if (bucket.includes("GESTION") || bucket.includes("SCRUM")) return "Scrum";
   if (bucket.includes("DESARROLLO")) return "Desarrollo";
-  if (bucket.includes("CONJUNTA") || bucket.includes("ENTEL_INTELLICORE")) return "Entel_Intellicore";
+  if (bucket.includes("CONJUNTA") || bucket.includes("ENTEL_INTELLICORE") || bucket.includes("ENTEL-INTELLICORE")) return "Entel_Intellicore";
 
   const applied = task.appliedCategories || {};
   const activeCategories = Object.entries(applied)
@@ -133,19 +134,19 @@ function scopeFromTask(task, categoryDescriptions, bucketName = "") {
     .filter(Boolean);
 
   const haystack = normalizeIdentifier([task.title || "", ...activeCategories, task.id || ""].join(" "));
+  if (haystack.includes("CONJUNTA") || haystack.includes("CONJUNTO") || haystack.includes("ENTEL_INTELLICORE") || haystack.includes("ENTEL-INTELLICORE")) return "Entel_Intellicore";
   if (haystack.includes("INTELLICORE")) return "Intellicore";
   if (haystack.includes("DESARROLLO")) return "Desarrollo";
-  if (haystack.includes("CONJUNTA") || haystack.includes("CONJUNTO") || haystack.includes("ENTEL_INTELLICORE")) return "Entel_Intellicore";
   return "Entel";
 }
 
 function scopeKeyFromLabel(scope) {
   const normalized = normalizeIdentifier(scope);
+  if (normalized.includes("CONJUNTA") || normalized.includes("CONJUNTO") || normalized.includes("ENTEL_INTELLICORE") || normalized.includes("ENTEL-INTELLICORE")) return "conjunta";
   if (normalized.includes("INTELLICORE") && !normalized.includes("ENTEL")) return "intellicore";
   if (normalized.includes("DESARROLLO")) return "desarrollo";
   if (normalized.includes("SCRUM") || normalized.includes("GESTION")) return "gestion";
   if (normalized.includes("SPLUNK")) return "splunk";
-  if (normalized.includes("CONJUNTA") || normalized.includes("CONJUNTO") || normalized.includes("ENTEL_INTELLICORE")) return "conjunta";
   return "entel";
 }
 

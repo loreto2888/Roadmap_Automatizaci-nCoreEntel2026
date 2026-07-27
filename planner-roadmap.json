@@ -7,30 +7,6 @@
       "title": "Roadmap Entel",
       "tasks": [
         {
-          "id": "ENTEL-004",
-          "title": "ENTEL-004 — Definición Ambiente Oficial de Desarrollo",
-          "owner": "Sin asignar",
-          "start": "15-04-2026",
-          "pending": "22-06-2026",
-          "deposit": "Atrasada",
-          "status": "En curso",
-          "priority": "Medium",
-          "scope": "Entel",
-          "completed": false
-        },
-        {
-          "id": "ENTEL-006",
-          "title": "ENTEL-006 — Validación Herramientas Corporativas Autorizadas",
-          "owner": "Sin asignar",
-          "start": "15-04-2026",
-          "pending": "22-06-2026",
-          "deposit": "Atrasada",
-          "status": "En curso",
-          "priority": "Medium",
-          "scope": "Entel",
-          "completed": false
-        },
-        {
           "id": "ENTEL-020",
           "title": "ENTEL-020 — Revisar Conectividad Cajas / Equipos",
           "owner": "Sin asignar",
@@ -79,6 +55,18 @@
           "completed": true
         },
         {
+          "id": "ENTEL-004",
+          "title": "ENTEL-004 — Definición Ambiente Oficial de Desarrollo",
+          "owner": "Sin asignar",
+          "start": "15-04-2026",
+          "pending": "22-06-2026",
+          "deposit": "Cierre",
+          "status": "Completa",
+          "priority": "Medium",
+          "scope": "Entel",
+          "completed": true
+        },
+        {
           "id": "ENTEL-005",
           "title": "ENTEL-005 — Entrega Credenciales y Accesos Entel",
           "owner": "Sin asignar",
@@ -87,6 +75,18 @@
           "deposit": "Cierre",
           "status": "Completa",
           "priority": "Important",
+          "scope": "Entel",
+          "completed": true
+        },
+        {
+          "id": "ENTEL-006",
+          "title": "ENTEL-006 — Validación Herramientas Corporativas Autorizadas",
+          "owner": "Sin asignar",
+          "start": "15-04-2026",
+          "pending": "22-06-2026",
+          "deposit": "Cierre",
+          "status": "Completa",
+          "priority": "Medium",
           "scope": "Entel",
           "completed": true
         },
@@ -267,18 +267,6 @@
       "title": "Desarrollos",
       "tasks": [
         {
-          "id": "INTELLICORE-004",
-          "title": "ENTEL-INTELLICORE-004 — Validar Factibilidad Automatización IR-21",
-          "owner": "Johanna  Barrientos A. - Intellicore",
-          "start": "01-06-2026",
-          "pending": "31-07-2026",
-          "deposit": "Curso",
-          "status": "En curso",
-          "priority": "Important",
-          "scope": "Intellicore",
-          "completed": false
-        },
-        {
           "id": "INTELLICORE-009",
           "title": "INTELLICORE-009— Generar Dashboard Ejecutivo Observabilidad",
           "owner": "Johanna  Barrientos A. - Intellicore",
@@ -303,30 +291,6 @@
           "completed": true
         },
         {
-          "id": "INTELLICORE-001",
-          "title": "ENTEL-INTELLICORE-001 — Definición Stack Tecnológico Oficial",
-          "owner": "Johanna  Barrientos A. - Intellicore",
-          "start": "11-05-2026",
-          "pending": "20-07-2026",
-          "deposit": "Cierre",
-          "status": "Completa",
-          "priority": "Important",
-          "scope": "Intellicore",
-          "completed": true
-        },
-        {
-          "id": "INTELLICORE-002",
-          "title": "ENTEL-INTELLICORE-002 — Evaluación Bitbucket vs GitLab",
-          "owner": "Johanna  Barrientos A. - Intellicore",
-          "start": "11-05-2026",
-          "pending": "19-06-2026",
-          "deposit": "Cierre",
-          "status": "Completa",
-          "priority": "Important",
-          "scope": "Intellicore",
-          "completed": true
-        },
-        {
           "id": "INTELLICORE-002",
           "title": "INTELLICORE-002 — Formalización Reportería Ejecutiva",
           "owner": "Johanna  Barrientos A. - Intellicore",
@@ -344,18 +308,6 @@
           "owner": "Rodrigo Henríquez M. - Intellicore",
           "start": "11-05-2026",
           "pending": "26-06-2026",
-          "deposit": "Cierre",
-          "status": "Completa",
-          "priority": "Important",
-          "scope": "Intellicore",
-          "completed": true
-        },
-        {
-          "id": "INTELLICORE-003",
-          "title": "ENTEL-INTELLICORE-003 — Integración Splunk + Down Detector",
-          "owner": "Johanna  Barrientos A. - Intellicore",
-          "start": "11-05-2026",
-          "pending": "08-06-2026",
           "deposit": "Cierre",
           "status": "Completa",
           "priority": "Important",
@@ -477,7 +429,56 @@
       "lane": "ENTEL_INTELLICORE",
       "kicker": "Planner",
       "title": "Roadmap Entel_Intellicore",
-      "tasks": []
+      "tasks": [
+        {
+          "id": "ENTEL-INTELLICORE-001",
+          "title": "ENTEL-INTELLICORE-001 — Definición Stack Tecnológico Oficial",
+          "owner": "Johanna  Barrientos A. - Intellicore",
+          "start": "11-05-2026",
+          "pending": "20-07-2026",
+          "deposit": "Cierre",
+          "status": "Completa",
+          "priority": "Important",
+          "scope": "Entel_Intellicore",
+          "completed": true
+        },
+        {
+          "id": "ENTEL-INTELLICORE-002",
+          "title": "ENTEL-INTELLICORE-002 — Evaluación Bitbucket vs GitLab",
+          "owner": "Johanna  Barrientos A. - Intellicore",
+          "start": "11-05-2026",
+          "pending": "19-06-2026",
+          "deposit": "Cierre",
+          "status": "Completa",
+          "priority": "Important",
+          "scope": "Entel_Intellicore",
+          "completed": true
+        },
+        {
+          "id": "ENTEL-INTELLICORE-003",
+          "title": "ENTEL-INTELLICORE-003 — Integración Splunk + Down Detector",
+          "owner": "Johanna  Barrientos A. - Intellicore",
+          "start": "11-05-2026",
+          "pending": "08-06-2026",
+          "deposit": "Cierre",
+          "status": "Completa",
+          "priority": "Important",
+          "scope": "Entel_Intellicore",
+          "completed": true
+        },
+        {
+          "id": "ENTEL-INTELLICORE-004",
+          "title": "ENTEL-INTELLICORE-004 — Validar Factibilidad Automatización IR-21",
+          "owner": "Johanna  Barrientos A. - Intellicore",
+          "start": "01-06-2026",
+          "pending": "31-07-2026",
+          "deposit": "Cierre",
+          "status": "Completa",
+          "priority": "Important",
+          "scope": "Entel_Intellicore",
+          "completed": true
+        }
+      ]
     },
     {
       "key": "splunk",
@@ -503,8 +504,8 @@
           "owner": "Jorge Bourguet B. - Intellciore",
           "start": "08-07-2026",
           "pending": "28-07-2026",
-          "deposit": "Revisión ",
-          "status": "Revision",
+          "deposit": "Curso",
+          "status": "En curso",
           "priority": "Important",
           "scope": "Servicio Splunk",
           "completed": false
@@ -515,8 +516,8 @@
           "owner": "Jorge Bourguet B. - Intellciore",
           "start": "15-07-2026",
           "pending": "31-07-2026",
-          "deposit": "Pendiente",
-          "status": "No iniciado",
+          "deposit": "Curso",
+          "status": "En curso",
           "priority": "Important",
           "scope": "Servicio Splunk",
           "completed": false
@@ -527,8 +528,8 @@
           "owner": "Jorge Bourguet B. - Intellciore",
           "start": "17-07-2026",
           "pending": "30-07-2026",
-          "deposit": "Revisión ",
-          "status": "Revision",
+          "deposit": "Curso",
+          "status": "En curso",
           "priority": "Important",
           "scope": "Servicio Splunk",
           "completed": false
@@ -635,5 +636,5 @@
       ]
     }
   ],
-  "generatedAt": "2026-07-27T20:36:21.526Z"
+  "generatedAt": "2026-07-27T21:12:19.845Z"
 }
