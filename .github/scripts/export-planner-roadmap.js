@@ -74,11 +74,20 @@ function createDeviceGraphClient(tenantId) {
       console.log(info.message);
     },
   });
+  let tokenPromise = null;
 
   return Client.initWithMiddleware({
     authProvider: {
       getAccessToken: async () => {
-        const token = await credential.getToken("https://graph.microsoft.com/.default");
+        if (!tokenPromise) {
+          tokenPromise = credential
+            .getToken("https://graph.microsoft.com/.default")
+            .finally(() => {
+              tokenPromise = null;
+            });
+        }
+
+        const token = await tokenPromise;
         return token.token;
       },
     },

@@ -271,7 +271,7 @@
           "title": "INTELLICORE-009— Generar Dashboard Ejecutivo Observabilidad",
           "owner": "Johanna  Barrientos A. - Intellicore",
           "start": "11-05-2026",
-          "pending": "15-07-2026",
+          "pending": "31-12-2026",
           "deposit": "Curso",
           "status": "En curso",
           "priority": "Important",
@@ -636,5 +636,5 @@
       ]
     }
   ],
-  "generatedAt": "2026-07-27T21:12:19.845Z"
+  "generatedAt": "2026-09-02T13:28:29.930Z"
 }
